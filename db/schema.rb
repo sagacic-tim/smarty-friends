@@ -16,6 +16,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_02_180117) do
   enable_extension "plpgsql"
 
   # this is the hstore branch
+  # we are not going to commit this change
 
   create_table "friends", force: :cascade do |t|
     t.string "name_title"

@@ -26,6 +26,9 @@ friends = Friend.create([
     country: "United States",
     country_code: "US",
     postal_code: "91792",
+    }
+    map_coordinates:
+    {
     latitude: "34.033730",
     longitude: "-117.915240"
     }
@@ -51,6 +54,9 @@ friends = Friend.create([
     country: "United States",
     country_code: "US",
     postal_code: "02459",{}
+    }
+    map_coordinates
+    {
     latitude: "34.033730",
     longitude: "-117.915240"
     },
