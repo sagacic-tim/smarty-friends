@@ -28,7 +28,7 @@ class Friend < ApplicationRecord
   def validate_address_with_smartystreets
     puts "street_number: " + street_number
     puts "street_name: " + street_name
-    puts "street_suffix: " +street_suffix
+    puts "street_suffix: " + street_suffix
     puts "city: " + city
     puts "state_province: " + state_province
     puts "country: " + country
@@ -36,11 +36,13 @@ class Friend < ApplicationRecord
 
     address_string = "#{street_number} #{street_name} #{street_suffix}, #{city}, #{state_province}, #{country}, #{postal_code}"
     puts "address string: " + address_string
-    
+
     # Call SmartyStreets API to validate the address
-    client = SmartyStreets::ClientBuilder.new.build
-    lookup = SmartyStreets::USStreet::Lookup.new(address_string)
+    auth_id = ENV['SMARTY_STREETS_AUTH_ID']
+    auth_token = ENV['SMARTY_STREETS_AUTH_TOKEN']
+    client = SmartyStreets::ClientBuilder.new(auth_id, auth_token).build
     client.send_lookup(lookup)
+    
 
     if lookup.empty?
       errors.add(:address, "is not valid")
