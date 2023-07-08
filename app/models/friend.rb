@@ -26,10 +26,13 @@ class Friend < ApplicationRecord
   private
 
   def validate_address_with_smartystreets
-    puts "street num: " + street_number
-    puts "name: " + street_name
-    puts "street suffix: " +street_suffix
+    puts "street_number: " + street_number
+    puts "street_name: " + street_name
+    puts "street_suffix: " +street_suffix
     puts "city: " + city
+    puts "state_province: " + state_province
+    puts "country: " + country
+    puts "postal_code: " + postal_code
 
     address_string = "#{street_number} #{street_name} #{street_suffix}, #{city}, #{state_province}, #{country}, #{postal_code}"
     puts "address string: " + address_string
