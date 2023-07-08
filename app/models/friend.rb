@@ -1,6 +1,8 @@
 require "smartystreets_ruby_sdk/client_builder"
 require "smartystreets_ruby_sdk/static_credentials"
-require "smartystreets_ruby_sdk/us_street"
+require "smartystreets_ruby_sdk/shared_credentials"
+require "smartystreets_ruby_sdk/us_street/lookup"
+require "smartystreets_ruby_sdk/us_street/match_type"
 
 class Friend < ApplicationRecord
   store_accessor :address,
@@ -38,19 +40,31 @@ class Friend < ApplicationRecord
     puts "address string: " + address_string
 
     # Call SmartyStreets API to validate the address
-    auth_id = 'debd2326-564d-a376-7f1d-cacc8e36599d'
-    auth_token = 'GZeXx3iwJPTQypTSLi6z'
+    auth_id = ENV['SMARTY_STREETS_AUTH_ID']
+    auth_token = ENV['SMARTY_STREETS_AUTH_TOKEN']
     credentials = SmartyStreets::SharedCredentials.new(auth_id, auth_token)
-    client = SmartyStreets::ClientBuilder.new(credentials).build
-    client.send_lookup(lookup)
-    
+    client = SmartyStreets::ClientBuilder.new(credentials).build_us_street_api_client
 
-    if lookup.empty?
-      errors.add(:address, "is not valid")
-    elsif !lookup[0].analysis.verified?
-      errors.add(:address, "could not be verified")
+    begin
+      client.send_lookup(lookup)
+      rescue SmartyStreets::SmartyError => err
+      puts err
+      return
     end
-    rescue SmartyStreets::SmartyError => e
-    errors.add(:address, "encountered an error: #{e.message}")
+
+    result = lookup.result
+
+    if result.empty?
+      puts 'No candidates. This means the address is not valid.'
+      return
+    end
+
+    first_candidate = result[0]
+
+    puts "There is at least one candidate.\n If the match parameter is set to STRICT, the address is valid.\n Otherwise, check the Analysis output fields to see if the address is valid.\n"
+    puts "ZIP Code: #{first_candidate.components.zipcode}"
+    puts "County: #{first_candidate.metadata.county_name}"
+    puts "Latitude: #{first_candidate.metadata.latitude}"
+    puts "Longitude: #{first_candidate.metadata.longitude}"
   end
 end
