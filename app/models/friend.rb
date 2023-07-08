@@ -38,12 +38,9 @@ class Friend < ApplicationRecord
     puts "address string: " + address_string
 
     # Call SmartyStreets API to validate the address
-    auth_id = ENV['SMARTY_STREETS_AUTH_ID']
-    auth_token = ENV['SMARTY_STREETS_AUTH_TOKEN']
-    credentials = {
-      auth_id: auth_id,
-      auth_token: auth_token
-    }
+    auth_id = 'debd2326-564d-a376-7f1d-cacc8e36599d'
+    auth_token = 'GZeXx3iwJPTQypTSLi6z'
+    credentials = SmartyStreets::SharedCredentials.new(auth_id, auth_token)
     client = SmartyStreets::ClientBuilder.new(credentials).build
     client.send_lookup(lookup)
     
