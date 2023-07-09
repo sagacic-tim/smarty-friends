@@ -42,7 +42,9 @@ class Friend < ApplicationRecord
     # Call SmartyStreets API to validate the address
     app_auth_id = Rails.application.credentials.dig(:smarty_streets, :auth_id)
     app_auth_token = Rails.application.credentials.dig(:smarty_streets, :auth_token)
-    credentials = SmartyStreets::SharedCredentials.new(app_auth_id, app_auth_token)
+    puts app_auth_id
+    puts app_auth_token
+    credentials = SmartyStreets::StaticCredentials.new(app_auth_id, app_auth_token)
     client = SmartyStreets::ClientBuilder.new(credentials).build_us_street_api_client
     lookup = SmartyStreets::USStreet::Lookup.new(address_string) # Pass the address string as an argument
 
