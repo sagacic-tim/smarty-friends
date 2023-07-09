@@ -65,8 +65,24 @@ class Friend < ApplicationRecord
     first_candidate = result[0]
 
     puts "There is at least one candidate.\n If the match parameter is set to STRICT, the address is valid.\n Otherwise, check the Analysis output fields to see if the address is valid.\n"
-    puts "ZIP Code: #{first_candidate.components.zipcode}"
+    puts "Delivery Line 1: #{first_candidate.delivery_line_1}"
+    puts "Last Line: #{first_candidate.last_line}"
+    puts "Delivery Point Bar Code: #{first_candidate.delivery_point_barcode}"
+    puts "Street Number: #{first_candidate.components.primary_number}"
+    puts "Street Name: #{first_candidate.components.street_name}"
+    puts "Street Suffix: #{first_candidate.components.street_suffix}"
+    puts "City: #{first_candidate.components.city_name}"
     puts "County: #{first_candidate.metadata.county_name}"
+    puts "County FIPS: #{first_candidate.metadata.county_fips}"
+    puts "State Abbreviation: #{first_candidate.components.state_abbreviation}"
+    puts "Zip Code: #{first_candidate.components.zipcode}"
+    puts "Zip Plus 4 Extension: #{first_candidate.components.plus4_code}"
+    puts "Zip Type: #{first_candidate.metadata.zip_type}"
+    puts "Delivery Point: #{first_candidate.components.delivery_point}"
+    puts "Delivery Point Check Digit: #{first_candidate.components.delivery_point_check_digit}"
+    puts "Carrier Route: #{first_candidate.metadata.carrier_route}"
+    puts "Record Type: #{first_candidate.metadata.record_type}"
+
     puts "Latitude: #{first_candidate.metadata.latitude}"
     puts "Longitude: #{first_candidate.metadata.longitude}"
   end
