@@ -1,5 +1,6 @@
 class CreateFriends < ActiveRecord::Migration[7.0]
   def change
+    enable_extension 'hstore'
     create_table :friends do |t|
       t.hstore :name
       t.date :dob
