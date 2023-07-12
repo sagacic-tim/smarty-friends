@@ -1,17 +1,82 @@
-
-require 'smartystreets_ruby_sdk'
+require "smartystreets_ruby_sdk/client_builder"
+require "smartystreets_ruby_sdk/static_credentials"
+require "smartystreets_ruby_sdk/shared_credentials"
+require "smartystreets_ruby_sdk/us_street/lookup"
+require "smartystreets_ruby_sdk/us_street/match_type"
+# require 'dry/types'
+# require_relative '../lib/tasks/decimal_types'
 
 class Friend < ApplicationRecord
-  geocoded_by :address 
-  extend Geocoder::Model::ActiveRecord
-  validates :name_first, presence: true, format: { with: /\A(?:[A-Za-z]+\.)?\s*[A-Za-z]+\s*(?:[A-Za-z]+\s*)*(?:[A-Za-z]+\s*)?\z/, message: "should contain a valid title, full name, and optional suffix" }
-  validates :phone, phone: true, allow_blank: true
-  validates :twitter, presence: true, format: { with: /\A(\@)?([a-z0-9_]{1,15})$\z/, message: "please enter a valid twitter name"}
-  validates :email, email: {mode: :strict, require_fqdn: true}
-  validates :street_name, presence: true
-  # validate :address_validation, if: -> { something_changed? }
-  validates :available_to_party, presence: true
+   store_accessor :address, :delivery_line_1, :last_line, :delivery_point_bar_code, :street_number, :street_name, :street_suffix, :city, :county, :county_FIPS, :state_abbreviation, :country, :country_code, :postal_code, :zip_plus_4_extension, :zip_type, :delivery_point, :delivery_point_check_digit, :carrier_route, :record_type, :latitude, :longitude
+       
+   store_accessor :name, :name_title, :name_first, :name_middle, :name_last, :name_suffix
 
-  serialize :original_attributes
-  serialize :verification_info
+    validates :name_title, :name_first, :name_middle, :name_last, :name_suffix, presence: true, allow_nil: true, format: { with: /\A(?:[A-Za-z]+\.)?\s*[A-Za-z]+\s*(?:[A-Za-z]+\s*)*(?:[A-Za-z]+\s*)?\z/, message: "should contain at least a valid first name and last name. Title, middle name and name suffix are optional" } 
+    validate :show_full_name
+    validates :phone, phone: true, allow_blank: true
+    validates :twitter_handle, presence: true, format: { with: /\A(\@)?([a-z0-9_]{1,15})$\z/, message: "please enter a valid twitter name"}
+    validates :email, email: {mode: :strict, require_fqdn: true}
+    validate :validate_address_with_smartystreets
+    validates_presence_of :available_to_party
+
+    serialize :original_attributes
+    serialize :verification_info
+
+    private
+
+    def show_full_name
+        full_name ="#{name_title} #{name_first} #{name_middle} #{name_last} #{name_suffix}"
+        puts "\nFull Name: " + full_name + "\n\n"
+    end
+
+    def validate_address_with_smartystreets
+        address_hash = self.address
+
+        address_string = "#{address_hash["street_number"]} #{address_hash["street_name"]} #{address_hash["street_suffix"]}, #{address_hash["city"]} #{address_hash["state_abbreviation"]} #{address_hash["country"]} #{address_hash["postal_code"]}"
+
+        # Call SmartyStreets API to validate the address
+        app_auth_id = Rails.application.credentials.dig(:smarty_streets, :auth_id)
+        app_auth_token = Rails.application.credentials.dig(:smarty_streets, :auth_token)
+        credentials = SmartyStreets::StaticCredentials.new(app_auth_id, app_auth_token)
+        client = SmartyStreets::ClientBuilder.new(credentials).build_us_street_api_client
+        lookup = SmartyStreets::USStreet::Lookup.new(address_string) # Pass the address string as an argument
+        lookup.match = 'STRICT' # Only valid addresses returned.
+
+        begin
+            client.send_lookup(lookup)
+            rescue SmartyStreets::SmartyError => err
+            puts err
+            return
+        end
+
+        result = lookup.result
+
+        if result.empty?
+            puts 'No candidates. This means the address is not valid.\n\n'
+            return
+        end
+
+        first_candidate = result[0]
+
+        puts "There is at least one candidate.\n\nThe match parameter IS set to STRICT, this means the address IS valid.\n\n"
+        address_hash["delivery_line_1"] = first_candidate.delivery_line_1
+        address_hash["last_line"] = first_candidate.last_line
+        address_hash["delivery_point_bar_code"] = first_candidate.delivery_point_barcode
+        address_hash["street_number"] = first_candidate.components.primary_number
+        address_hash["street_name"] =  first_candidate.components.street_name
+        address_hash["street_suffix"] = first_candidate.components.street_suffix
+        address_hash["city"] = first_candidate.components.city_name
+        address_hash["county"] = first_candidate.metadata.county_name
+        address_hash["county_FIPS"] = first_candidate.metadata.county_fips
+        address_hash["state_abbreviation"] = first_candidate.components.state_abbreviation
+        address_hash["postal_code"] = first_candidate.components.zipcode
+        address_hash["zip_plus_4_extension"] = first_candidate.components.plus4_code
+        address_hash["zip_type"] = first_candidate.metadata.zip_type
+        address_hash["delivery_point"] = first_candidate.components.delivery_point
+        address_hash["delivery_point_check_digit"] = first_candidate.components.delivery_point_check_digit
+        address_hash["carrier_route"] = first_candidate.metadata.carrier_route
+        address_hash["record_type"] = first_candidate.metadata.record_type
+        address_hash["latitude"] = "#{first_candidate.metadata.latitude}"
+        address_hash["longitude"] = "#{first_candidate.metadata.longitude}"
+    end
 end

@@ -49,10 +49,18 @@ class Api::V1::FriendsController < ApplicationController
       render json: {message: "Friend cannot be updated"}, status: :unprocessable_entity
     end
   end
-end
 
   private
 
   def friend_params
-    params.require(:friend).permit(name: [:name_title, :name_first, :name_middle, :name_last, :name_suffix], :dob, :phone, :twitter, :email, address: [:street_number, :street_name, :street_suffix, :city, :state_province, :country, :country_code, :postal_code, :latitude, :longitude], :available_to_party)
+    params.require(:friend).permit(
+      { name: [:name_title, :name_first, :name_middle, :name_last, :name_suffix] },
+      :dob,
+      :phone,
+      :twitter_handle,
+      :email,
+      { address: [:delivery_line_1, :last_line, :delivery_point_bar_code, :street_number, :street_name, :street_suffix, :city, :county, :county_FIPS, :state_abbreviation, :country, :country_code, :postal_code, :zip_plus_4_extension, :zip_type, :delivery_point, :delivery_point_check_digit, :carrier_route, :record_type, :latitude, :longitude] },
+      :available_to_party
+    )
   end
+end

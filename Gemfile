@@ -93,6 +93,16 @@ gem 'email_validator'
 # list given their user base.
 gem 'country_select', '~> 8.0'
 
+# dry-types is a simple and extendable type system for Ruby;
+# useful for value coercions, applying constraints, defining
+# complex structs or value objects and more. It was created
+# as a successor to Virtus.
+gem 'dry-types', '~> 1.7'
+
+# dry-struct is a gem built on top of dry-types which provides
+# virtus-like DSL for defining typed struct classes.
+gem 'dry-struct', '~> 1.6'
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri mingw x64_mingw ]
