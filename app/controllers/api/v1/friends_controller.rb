@@ -59,8 +59,7 @@ class Api::V1::FriendsController < ApplicationController
       :phone,
       :twitter_handle,
       :email,
-      { address: [:street_number, :street_name, :street_suffix, :city, :state_province, :country, :country_code, :postal_code] },
-      { map_coordinates: [:latitude, :longitude] },
+      { address: [:delivery_line_1, :last_line, :delivery_point_bar_code, :street_number, :street_name, :street_suffix, :city, :county, :county_FIPS, :state_abbreviation, :country, :country_code, :postal_code, :zip_plus_4_extension, :zip_type, :delivery_point, :delivery_point_check_digit, :carrier_route, :record_type, :latitude, :longitude] },
       :available_to_party
     )
   end

@@ -5,16 +5,17 @@
 #
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
+# require 'dry/types'
 # require_relative '../lib/tasks/decimal_types'
 
 friends = Friend.create([
 {
     name: {
-        name_title: "Mr.",
+        name_title: "Sir",
         name_first: "Timothy",
         name_middle: "Edgar",
         name_last: "Michel",
-        name_suffix: ""
+        name_suffix: "VIII"
     },
     phone: "+16264833220",
     twitter_handle: "@tmichel",
@@ -24,14 +25,12 @@ friends = Friend.create([
         street_name: "Rodney",
         street_suffix: "Road",
         city: "West Covina",
-        state_province: "California",
-        country: "United States",
+        state_abbreviation: "CA",
+        country: "",
         country_code: "US",
-        postal_code: "91792",
-    },
-    map_coordinates: {
-        latitude: "34.033730",
-        longitude: "-117.915240"
+        postal_code: "",
+        latitude: "",
+        longitude: ""
     },
     available_to_party: "no"
 }])

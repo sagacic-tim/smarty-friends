@@ -1,6 +1,7 @@
-module Dry
-    module Types
-      include Dry.Types()
-      Decimal = ::Types::Coercible::Decimal
-    end
-end  
+module DecimalTypes
+    include Dry.Types()
+    Decimal = Types::Coercible::Decimal
+    String = Types::Coercible::String
+    DecimalToString = ::Types::Coercible::Decimal.constructor(&:to_s)
+end
+  
