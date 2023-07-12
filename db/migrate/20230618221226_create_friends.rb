@@ -8,7 +8,6 @@ class CreateFriends < ActiveRecord::Migration[7.0]
       t.string :twitter_handle
       t.string :email
       t.hstore :address
-      t.hstore :map_coordinates
       t.boolean :available_to_party
 
       t.timestamps

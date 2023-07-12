@@ -16,16 +16,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_06_004938) do
   enable_extension "plpgsql"
 
   create_table "friends", force: :cascade do |t|
+    t.hstore "name"
     t.date "dob"
     t.string "phone"
     t.string "twitter_handle"
     t.string "email"
+    t.hstore "address"
     t.boolean "available_to_party"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.hstore "map_coordinates"
-    t.hstore "address"
-    t.hstore "name"
   end
 
 end

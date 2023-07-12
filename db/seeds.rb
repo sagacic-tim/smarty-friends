@@ -8,7 +8,7 @@
 # require 'dry/types'
 # require_relative '../lib/tasks/decimal_types'
 
-friends = Friend.create([
+friends = Friend.create!([
 {
     name: {
         name_title: "Sir",
@@ -21,14 +21,25 @@ friends = Friend.create([
     twitter_handle: "@tmichel",
     email: "tmichel@sagacicweb.com",
     address: {
+        delivery_line_1: "",
+        last_line: "",
+        delivery_point_bar_code: "", 
         street_number: "1404",
         street_name: "Rodney",
         street_suffix: "Road",
         city: "West Covina",
+        county: "",
+        county_FIPS: "",
         state_abbreviation: "CA",
         country: "",
         country_code: "US",
         postal_code: "",
+        zip_plus_4_extension: "",
+        zip_type: "",
+        delivery_point: "",
+        delivery_point_check_digit: "",
+        carrier_route: "",
+        record_type: "",
         latitude: "",
         longitude: ""
     },
