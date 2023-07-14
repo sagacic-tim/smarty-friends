@@ -5,29 +5,26 @@ require "smartystreets_ruby_sdk/us_street/lookup"
 require "smartystreets_ruby_sdk/us_street/match_type"
 # require 'dry/types'
 # require_relative '../lib/tasks/decimal_types'
+# require 'colorize' # Extends String class
+# require 'colorized_string' # add ColorizedString class
 
 class Friend < ApplicationRecord
    store_accessor :address, :delivery_line_1, :last_line, :delivery_point_bar_code, :street_number, :street_name, :street_suffix, :city, :county, :county_FIPS, :state_abbreviation, :country, :country_code, :postal_code, :zip_plus_4_extension, :zip_type, :delivery_point, :delivery_point_check_digit, :carrier_route, :record_type, :latitude, :longitude
        
    store_accessor :name, :name_title, :name_first, :name_middle, :name_last, :name_suffix
 
-    validates :name_title, :name_first, :name_middle, :name_last, :name_suffix, presence: true, allow_nil: true, format: { with: /\A(?:[A-Za-z]+\.)?\s*[A-Za-z]+\s*(?:[A-Za-z]+\s*)*(?:[A-Za-z]+\s*)?\z/, message: "should contain at least a valid first name and last name. Title, middle name and name suffix are optional" } 
-    validate :show_full_name
+    validates :name_title, :name_first, :name_middle, :name_last, :name_suffix, presence: true, allow_nil: true, format: { with: /\A(?:[A-Za-z]+\.)?\s*[A-Za-z]+\s*(?:[A-Za-z]+\s*)*(?:[A-Za-z]+\s*)?\z/, message: "Should contain at least a valid first name and last name. Title, middle name and name suffix are optional — only alpha numeric characters and .,' and spaces" } 
     validates :phone, phone: true, allow_blank: true
-    validates :twitter_handle, presence: true, format: { with: /\A(\@)?([a-z0-9_]{1,15})$\z/, message: "please enter a valid twitter name"}
+    validates :twitter_handle, presence: true, allow_blank: true, format: { with: /\A(\@)?([a-z0-9_]{1,15})$\z/, message: "please enter a valid twitter name"}
     validates :email, email: {mode: :strict, require_fqdn: true}
-    validate :validate_address_with_smartystreets
-    validates_presence_of :available_to_party
+    validates :available_to_party, inclusion: [true,false]
 
     serialize :original_attributes
     serialize :verification_info
 
-    private
+    before_validation :validate_address_with_smartystreets
 
-    def show_full_name
-        full_name ="#{name_title} #{name_first} #{name_middle} #{name_last} #{name_suffix}"
-        puts "\nFull Name: " + full_name + "\n\n"
-    end
+    # private
 
     def validate_address_with_smartystreets
         address_hash = self.address
@@ -40,7 +37,7 @@ class Friend < ApplicationRecord
         credentials = SmartyStreets::StaticCredentials.new(app_auth_id, app_auth_token)
         client = SmartyStreets::ClientBuilder.new(credentials).build_us_street_api_client
         lookup = SmartyStreets::USStreet::Lookup.new(address_string) # Pass the address string as an argument
-        lookup.match = 'STRICT' # Only valid addresses returned.
+        lookup.match = :strict # Indicates an exact address match.
 
         begin
             client.send_lookup(lookup)
@@ -58,7 +55,18 @@ class Friend < ApplicationRecord
 
         first_candidate = result[0]
 
-        puts "There is at least one candidate.\n\nThe match parameter IS set to STRICT, this means the address IS valid.\n\n"
+        if lookup.match == :strict
+            puts "There is at least one candidate.\n\nThe match parameter IS set to " + lookup.match.to_s + ", this means the address IS valid.\n\n"
+        elsif lookup.match == :exact
+            puts "There is at least one candidate.\n\nThe match parameter IS set to " + lookup.match.to_s + ", this indicates an exact match.\n\n" 
+        elsif lookup.match == :range
+            puts "There is at least one candidate.\n\nThe match parameter IS set to " + lookup.match.to_s + ", this Indicates a match within a range of addresses.\n\n" 
+        elsif lookup.match == :invalid
+            puts "There is at least one candidate.\n\nThe match parameter IS set to " + lookup.match.to_s + ", this means the addrress may or may not be valid and you need to perform further validations.\n\n"
+        else
+            puts "Invalid match type" + "\n\n"
+        end
+
         address_hash["delivery_line_1"] = first_candidate.delivery_line_1
         address_hash["last_line"] = first_candidate.last_line
         address_hash["delivery_point_bar_code"] = first_candidate.delivery_point_barcode
@@ -78,5 +86,6 @@ class Friend < ApplicationRecord
         address_hash["record_type"] = first_candidate.metadata.record_type
         address_hash["latitude"] = "#{first_candidate.metadata.latitude}"
         address_hash["longitude"] = "#{first_candidate.metadata.longitude}"
+        self.address = address_hash
     end
 end

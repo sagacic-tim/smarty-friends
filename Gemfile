@@ -101,6 +101,11 @@ gem 'dry-types', '~> 1.7'
 # virtus-like DSL for defining typed struct classes.
 gem 'dry-struct', '~> 1.6'
 
+# Ruby gem for colorizing text using ANSI escape sequences.
+# Extends String class or add a ColorizedString with methods
+# to set the text color, background color and text effects.
+gem 'colorize'
+
 group :development, :test do
   # This library provides debugging functionality to Ruby (MRI) 2.6
   # and later.
