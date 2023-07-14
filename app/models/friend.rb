@@ -56,13 +56,12 @@ class Friend < ApplicationRecord
         first_candidate = result[0]
 
         if lookup.match == :strict
-            puts "There is at least one candidate.\n\nThe match parameter IS set to " + lookup.match.to_s + ", this means the address IS valid.\n\n"
-        elsif lookup.match == :exact
-            puts "There is at least one candidate.\n\nThe match parameter IS set to " + lookup.match.to_s + ", this indicates an exact match.\n\n" 
-        elsif lookup.match == :range
-            puts "There is at least one candidate.\n\nThe match parameter IS set to " + lookup.match.to_s + ", this Indicates a match within a range of addresses.\n\n" 
+            puts "At least one candidate returned.\n\nMatch parameter is set to " + lookup.match.to_s + ", The API will return detailed output only if a valid match is found. Otherwise the API response will be an empty array.\n\n"
+        elsif lookup.match == :enhanced
+            puts "At least one candidate returned.\n\nMatch parameter is set to " + lookup.match.to_s + ", The API will return detailed output based on a more aggressive matching mechanism. It also includes a more comprehensive address dataset beyond just the postal address data. Requires a US Core license or a US Rooftop Geocoding license. Note: A freeform address, that we can't find a match for, will respond with an empty
+            array, \"\[\]\".\n\n" 
         elsif lookup.match == :invalid
-            puts "There is at least one candidate.\n\nThe match parameter IS set to " + lookup.match.to_s + ", this means the addrress may or may not be valid and you need to perform further validations.\n\n"
+            puts "Many candidates are possible matches.\n\nMatch parameter is set to " + lookup.match.to_s + ", The API will return detailed output for both valid and invalid addresses. To find out if the address is valid, check the dpv_match_code. Values of Y, S, or D indicate a valid address.\n\n"
         else
             puts "Invalid match type" + "\n\n"
         end
