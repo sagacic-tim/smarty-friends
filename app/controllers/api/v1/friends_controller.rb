@@ -10,13 +10,13 @@ class Api::V1::FriendsController < ApplicationController
   # create a new friend Post request
   def create
     @friend = Friend.new(friend_params)
-    logger.debug "New post: #{@post.attributes.inspect}"
-    logger.debug "Post should be valid: #{@post.valid?}"
+    # logger.debug "New post: #{@post.attributes.inspect}"
+    # .debug "Post should be valid: #{@post.valid?}"
     if @friend.save
       render json: {status: "SUCCESS", message: "Amazing, a new friend was created!", data: friend}, status: :created
-      logger.debug "Post was successful: #{@post.valid?}"
+      # logger.debug "Post was successful: #{@post.valid?}"
     else
-      logger.debug "Post has ewrror: #{@post.valid?}"
+      # logger.debug "Post has ewrror: #{@post.valid?}"
       render json: friend.errors, status: :unprocessable_entity
     end
   end

@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/ctran/annotate_models.git
+  revision: e60a66644e8a8ea5dccd6a398d31f22878233998
+  specs:
+    annotate (3.2.0)
+      activerecord (>= 3.2, < 8.0)
+      rake (>= 10.4, < 14.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -66,9 +74,6 @@ GEM
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
-    annotate (3.2.0)
-      activerecord (>= 3.2, < 8.0)
-      rake (>= 10.4, < 14.0)
     bootsnap (1.16.0)
       msgpack (~> 1.2)
     builder (3.2.4)
@@ -150,7 +155,7 @@ GEM
       nio4r (~> 2.0)
     racc (1.7.1)
     rack (2.2.7)
-    rack-cors (2.0.1)
+    rack-cors (1.1.1)
       rack (>= 2.0.0)
     rack-test (2.1.0)
       rack (>= 1.3)
@@ -200,10 +205,10 @@ PLATFORMS
   x86_64-darwin-22
 
 DEPENDENCIES
-  annotate
+  annotate!
   bootsnap
   country_select (~> 8.0)
-  debug
+  debug (>= 1.0.0)
   dotenv-rails
   dry-struct (~> 1.6)
   dry-types (~> 1.7)
@@ -213,7 +218,7 @@ DEPENDENCIES
   pg (~> 1.5, >= 1.5.3)
   phonelib (~> 0.8.1)
   puma (~> 6.3)
-  rack-cors
+  rack-cors (~> 1.1, >= 1.1.1)
   rails (~> 7.0.4, >= 7.0.4.3)
   smartystreets_ruby_sdk (~> 5.14, >= 5.14.19)
   tzinfo-data
