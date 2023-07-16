@@ -43,5 +43,5 @@ friends = Friend.create!([
         latitude: "",
         longitude: ""
     },
-    available_to_party: "no"
+    available_to_party: false
 }])

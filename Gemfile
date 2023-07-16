@@ -8,7 +8,7 @@ ruby "3.2.2"
 # onment is bootstrapped.”
 gem 'dotenv-rails', :groups => [:development, :test]
 
-# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
+# Bundle edge Rails instead: gem "rails", github: "rails/rails",
 gem "rails", "~> 7.0.4", ">= 7.0.4.3"
 
 # Use postgresql as the database for Active Record
@@ -38,8 +38,9 @@ gem "bootsnap", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
-# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
-# gem "rack-cors"
+# Rack::Cors provides support for Cross-Origin Resource
+# Sharing (CORS) for Rack compatible web applications.
+gem 'rack-cors', '~> 1.1', '>= 1.1.1'
  
 # Google libphonenumber library was taken as a basis for
 # this gem. Gem uses its data file for validations and
@@ -68,10 +69,6 @@ gem "mainstreet"
 # caching, and more. Designed for Rails but works with
 # Sinatra and other Rack frameworks too.
 gem 'geocoder', '~> 1.3', '>= 1.3.7'
-
-# Rack::Cors provides support for Cross-Origin Resource
-# Sharing (CORS) for Rack compatible web applications.
-gem 'rack-cors'
 
 # An email validator for Rails 3+
 # The default validation provided by this gem (the :loose
@@ -103,13 +100,23 @@ gem 'dry-types', '~> 1.7'
 # virtus-like DSL for defining typed struct classes.
 gem 'dry-struct', '~> 1.6'
 
+# Ruby gem for colorizing text using ANSI escape sequences.
+# Extends String class or add a ColorizedString with methods
+# to set the text color, background color and text effects.
+gem 'colorize'
+
 group :development, :test do
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri mingw x64_mingw ]
+  # This library provides debugging functionality to Ruby (MRI) 2.6
+  # and later.
+  # This debug.rb is replacement of traditional lib/debug.rb
+  # standard library which is implemented by set_trace_func. New
+  # debug.rb has several advantages:
+  # See: https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+  gem "debug", ">= 1.0.0"
 end
 
 group :development do
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
-  gem 'annotate'
+  gem 'annotate', git: 'https://github.com/ctran/annotate_models.git'
 end
