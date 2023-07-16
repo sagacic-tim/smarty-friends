@@ -10,21 +10,18 @@ require "smartystreets_ruby_sdk/us_street/match_type"
 
 class Friend < ApplicationRecord
    store_accessor :address, :delivery_line_1, :last_line, :delivery_point_bar_code, :street_number, :street_name, :street_suffix, :city, :county, :county_FIPS, :state_abbreviation, :country, :country_code, :postal_code, :zip_plus_4_extension, :zip_type, :delivery_point, :delivery_point_check_digit, :carrier_route, :record_type, :latitude, :longitude
-       
    store_accessor :name, :name_title, :name_first, :name_middle, :name_last, :name_suffix
 
     validates :name_title, :name_first, :name_middle, :name_last, :name_suffix, presence: true, allow_nil: true, format: { with: /\A(?:[A-Za-z]+\.)?\s*[A-Za-z]+\s*(?:[A-Za-z]+\s*)*(?:[A-Za-z]+\s*)?\z/, message: "Should contain at least a valid first name and last name. Title, middle name and name suffix are optional — only alpha numeric characters and .,' and spaces" } 
     validates :phone, phone: true, allow_blank: true
     validates :twitter_handle, presence: true, allow_blank: true, format: { with: /\A(\@)?([a-z0-9_]{1,15})$\z/, message: "please enter a valid twitter name"}
     validates :email, email: {mode: :strict, require_fqdn: true}
-    validates :available_to_party, inclusion: [true,false]
+    validates :available_to_party, inclusion: [true, false]
 
     serialize :original_attributes
     serialize :verification_info
 
     before_validation :validate_address_with_smartystreets
-
-    # private
 
     def validate_address_with_smartystreets
         address_hash = self.address
