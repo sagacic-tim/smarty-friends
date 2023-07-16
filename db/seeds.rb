@@ -7,6 +7,7 @@
 #   Character.create(name: "Luke", movie: movies.first)
 # require 'dry/types'
 # require_relative '../lib/tasks/decimal_types'
+require 'dotenv'
 
 friends = Friend.create!([
 {

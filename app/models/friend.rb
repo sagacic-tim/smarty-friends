@@ -1,3 +1,4 @@
+require 'dotenv'
 require "smartystreets_ruby_sdk/client_builder"
 require "smartystreets_ruby_sdk/static_credentials"
 require "smartystreets_ruby_sdk/shared_credentials"

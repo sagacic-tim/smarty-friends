@@ -1,6 +1,7 @@
 class Api::V1::FriendsController < ApplicationController
   before_action :set_friend, only: %i[update show destroy]
   require 'debug'
+  require 'dotenv'
   
   def index
     @friends = Friend.all 
