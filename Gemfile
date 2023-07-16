@@ -9,7 +9,6 @@ ruby "3.2.2"
 gem 'dotenv-rails', :groups => [:development, :test]
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails",
-# branch: "main"
 gem "rails", "~> 7.0.4", ">= 7.0.4.3"
 
 # Use postgresql as the database for Active Record
@@ -111,7 +110,7 @@ group :development, :test do
   # and later.
   # This debug.rb is replacement of traditional lib/debug.rb
   # standard library which is implemented by set_trace_func. New
-  #debug.rb has several advantages:
+  # debug.rb has several advantages:
   # See: https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", ">= 1.0.0"
 end
