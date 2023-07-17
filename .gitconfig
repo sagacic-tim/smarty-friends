@@ -1,2 +1,0 @@
-[alias]
-    gitpub = "!git push origin $(dry_implementation)"
