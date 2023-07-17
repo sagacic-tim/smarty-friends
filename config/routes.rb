@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   # root "articles#index"
   namespace :api do
     namespace :v1 do
-      resources :friends, only: [:index, :create, :update, :show, :destroy]
+      resources :friends, only: [:index, :create]
     end
   end
 end
