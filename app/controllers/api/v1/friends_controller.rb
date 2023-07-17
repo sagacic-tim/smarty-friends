@@ -19,35 +19,6 @@ class Api::V1::FriendsController < ApplicationController
       render json: @friend.errors, status: :unprocessable_entity
     end
   end
-  
-  def show
-    friend = Friend.find(params[:id])
-
-    if friend
-      render json: {data: friend}, state: :ok
-    else
-      render json: {message: "Friend could not be found"}, status: :bad_request
-    end
-  end
-  def destroy
-    friend = Friend.find(params[:id])
-
-    if friend.destroy!
-      render json: {message: "Friend was deleted successfully"}, status: :ok
-    else
-      render json: {message: "Friend does not exist"}, status: :bad_request
-    end
-  end
-
-  def update
-    friend = Friend.find(params[:id])
-
-    if friend.update!(friend_params)
-      render json: {message: "Friend was updated successfully", data: friend}, status: :ok
-    else
-      render json: {message: "Friend cannot be updated"}, status: :unprocessable_entity
-    end
-  end
 
   private
 
