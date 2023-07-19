@@ -1,4 +1,5 @@
 class Api::V1::FriendsController < ApplicationController
+  before_action :current_friend, only: [:update]
   require 'debug'
   
   def index
@@ -14,7 +15,15 @@ class Api::V1::FriendsController < ApplicationController
     @friend = Friend.new(friend_params)
     
     if @friend.save
-      render json: {status: "SUCCESS", message: "Amazing, a new friend was created!", data: @friend}, status: :created
+      render json: {status: "SUCCESS", message: "Amazing, a new friend was successfully created!", data: @friend}, status: :created
+    else
+      render json: @friend.errors, status: :unprocessable_entity
+    end
+  end
+
+  def update 
+    if @friend.update(friend_params)
+      render json: {status: "SUCCESS", message: "Amazing, your friend was successfully updated!", data: @friend}, status: :ok
     else
       render json: @friend.errors, status: :unprocessable_entity
     end
@@ -65,5 +74,8 @@ class Api::V1::FriendsController < ApplicationController
     },
       :available_to_party
     )
+  end
+  def current_friend
+    @friend=Friend.find(params[:id])
   end
 end
