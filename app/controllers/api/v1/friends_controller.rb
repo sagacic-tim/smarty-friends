@@ -1,5 +1,7 @@
 class Api::V1::FriendsController < ApplicationController
   require 'debug'
+
+  before_action :current_friend, only:[:update]
   
   def index
     friends = Friend.all 
@@ -21,7 +23,6 @@ class Api::V1::FriendsController < ApplicationController
   end
 
   def update
-    @friend = Friend.find(params[:id])
     
     if @friend.update(friend_params)
       render json: {status: "SUCCESS", message: "Amazing, your friend was successfully updated!", data: @friend}, status: :updated
@@ -75,5 +76,8 @@ class Api::V1::FriendsController < ApplicationController
     },
       :available_to_party
     )
+  end
+  def current_friend
+    @friend =Friend . find(params[:id])
   end
 end
