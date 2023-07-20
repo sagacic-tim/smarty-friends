@@ -8,5 +8,5 @@ Rails.application.routes.draw do
       resources :friends, only: [:index, :show, :create, :update]
     end
   end
-  get 'friends/:id', to: 'friends#show', as: 'friend'
+  # get 'friends/:id', to: 'friends#show', as: 'friend'
 end
