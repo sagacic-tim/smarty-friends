@@ -1,13 +1,22 @@
 class Api::V1::FriendsController < ApplicationController
-  before_action :current_friend, only: [:update]
+  before_action :current_friend, only: %i[update show destroy]
   require 'debug'
   
   def index
-    friends = Friend.all 
-    if friends
-      render json: {status: "SUCCESS", message: "Fetched all the friends you got", data: friends}, status: :ok
+    @friends = Friend.all 
+    if @friends
+      render json: {status: "SUCCESS", message: "Fetched all the friends you got", data: @friends}, status: :ok
     else
-      render json: friends.errors, status: :bad_request
+      render json: @friends.errors, status: :bad_request
+    end
+  end
+
+  # Show a specific friend GET request
+  def show
+    if @friend
+      render json: {data: @friend}, state: :ok
+    else
+      render json: {message: "Friend could not be found"}, status: :bad_request
     end
   end
   
@@ -26,6 +35,16 @@ class Api::V1::FriendsController < ApplicationController
       render json: {status: "SUCCESS", message: "Amazing, your friend was successfully updated!", data: @friend}, status: :ok
     else
       render json: @friend.errors, status: :unprocessable_entity
+    end
+  end
+
+  # Delete a specific friend DELETE request
+  def destroy
+
+    if @friend.destroy!
+      render json: {message: "Friend was deleted successfully"}, status: :ok
+    else
+      render json: {message: "Friend does not exist"}, status: :bad_request
     end
   end
 
