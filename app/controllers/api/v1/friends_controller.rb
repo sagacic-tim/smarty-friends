@@ -19,6 +19,18 @@ class Api::V1::FriendsController < ApplicationController
       render json: {message: "Friend could not be found"}, status: :bad_request
     end
   end
+
+  # GET /api/v1/friends/:id Show a specific friend GET request
+  def show
+    if @friend
+      render json: { data: @friend }, status: :ok
+    else
+      render json: { message: "Friend could not be found" }, status: :not_found
+    end
+
+  rescue ActiveRecord::RecordNotFound
+    render json: { message: "Friend could not be found" }, status: :not_found
+  end
   
   def create
     @friend = Friend.new(friend_params)
@@ -94,7 +106,7 @@ class Api::V1::FriendsController < ApplicationController
       :available_to_party
     )
   end
-  def current_friend
-    @friend=Friend.find(params[:id])
+  def set_friend
+    @friend = Friend.find(params[:id])
   end
 end
