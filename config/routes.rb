@@ -5,7 +5,8 @@ Rails.application.routes.draw do
   # root "articles#index"
   namespace :api do
     namespace :v1 do
-      resources :friends, only: [:index, :create, :update]
+      resources :friends, only: [:index, :show, :create, :update]
     end
   end
+  # get 'friends/:id', to: 'friends#show', as: 'friend'
 end

@@ -1,14 +1,26 @@
 class Api::V1::FriendsController < ApplicationController
-  before_action :current_friend, only: [:update]
+  before_action :set_friend, only: %i[update show]
   require 'debug'
   
   def index
-    friends = Friend.all 
-    if friends
-      render json: {status: "SUCCESS", message: "Fetched all the friends you got", data: friends}, status: :ok
+    @friends = Friend.all 
+    if @friends
+      render json: {status: "SUCCESS", message: "Fetched all the friends you got", data: @friends}, status: :ok
     else
-      render json: friends.errors, status: :bad_request
+      render json: @friends.errors, status: :bad_request
     end
+  end
+
+  # GET /api/v1/friends/:id Show a specific friend GET request
+  def show
+    if @friend
+      render json: { data: @friend }, status: :ok
+    else
+      render json: { message: "Friend could not be found" }, status: :not_found
+    end
+
+  rescue ActiveRecord::RecordNotFound
+    render json: { message: "Friend could not be found" }, status: :not_found
   end
   
   def create
@@ -75,7 +87,7 @@ class Api::V1::FriendsController < ApplicationController
       :available_to_party
     )
   end
-  def current_friend
-    @friend=Friend.find(params[:id])
+  def set_friend
+    @friend = Friend.find(params[:id])
   end
 end
