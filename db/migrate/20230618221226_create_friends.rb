@@ -19,6 +19,8 @@ class CreateFriends < ActiveRecord::Migration[7.0]
       t.string :occupation, limit: 32
       t.boolean :available_to_party
 
+      t.string :delivery_line_1, limit: 50
+      t.string :last_line, limit: 50
       t.string :street_number, limit: 30
       t.string :street_predirection, limit: 16
       t.string :street_name, limit: 64

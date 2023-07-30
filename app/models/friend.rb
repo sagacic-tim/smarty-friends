@@ -13,6 +13,28 @@ module Types
   include Dry.Types()
 end
 
+DateConstrainedType = Dry::Types::Definition.new(Date).constructor do |value|
+  # Try to parse the date in various formats
+  date_formats = ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d', '%m-%d-%Y', '%d-%m-%Y', '%Y-%m-%d', '%Y%m%d', '%B %d, %Y', '%Y %B %d']
+  parsed_date = nil
+
+  date_formats.each do |format|
+    begin
+      parsed_date = Date.strptime(value, format)
+      break # Stop trying once a valid format is found
+    rescue ArgumentError
+      next # Continue with the next format if parsing fails
+    end
+  end
+
+  if parsed_date.nil?
+    raise Dry::Types::CoercionError.new("Invalid date format: #{value}")
+  end
+
+  # Convert the parsed date to %m/%d/%Y format before saving
+  parsed_date.strftime('%m/%d/%Y')
+end
+
 module ValidationPredicates
   include Dry::Logic::Predicates
 
@@ -48,24 +70,29 @@ class Friend < Dry::Struct
     twitter_handle: Types::String
   ).default(Hash.new).strict
 
+  # Define a custom type with the constrained date format
+  dob_type = Types::Date.constrained(type: DateConstrainedType)
+
   attribute :demographics_hash, Types::Hash.schema(
-    dob: Types::Date.constrained(min: Date.new(1880, 1, 1), max: Date.today - 18 * 365),
+    dob: Types::Coercible::String.constrained(format: DateConstrainedType).optional,
     sex: Types::String.constrained(max_size: 6).optional,
     occupation: Types::String.constrained(max_size: 32).optional,
     available_to_party: Types::Boolean
   ).default(Hash.new).strict
 
   attribute :address_hash, Types::Hash.schema(
+    delivery_line_1: Types::String.constrained(max_size: 50),
+    last_line: Types::String.constrained(max_size: 50),
     street_number: Types::String.constrained(max_size: 30),
     street_predirection: Types::String.constrained(max_size: 16).optional,
     street_name: Types::String.constrained(max_size: 64),
     street_suffix: Types::String.constrained(max_size: 16),
     street_postdirection: Types::String.constrained(max_size: 16).optional,
     city: Types::String.constrained(max_size: 64),
-    county: Types::String.constrained(max_size: 64).optional,
+    county: Types::String.default.constrained(max_size: 64).optional,
     state_abbreviation: Types::String.constrained(max_size: 2),
-    country: Types::String.constrained(max_size: 32).optional,
-    country_code: Types::String.constrained(max_size: 4),
+    country: Types::String.default('United States').constrained(max_size: 32).optional,
+    country_code: Types::String.default('US').constrained(max_size: 4),
     postal_code: Types::String.constrained(max_size: 5),
     zip_plus_4_extension: Types::String.constrained(max_size: 4).optional
   ).default(Hash.new).strict
@@ -76,7 +103,7 @@ class Friend < Dry::Struct
   attribute :geolocation_hash, Types::Hash.schema(
     latitude: LatitudeType,
     longitude: LongitudeType,
-    lat_long_location_precision: Types::String
+    lat_long_location_precision: Types::String.constrained(max_size: 18)
   )
 end
 
@@ -115,12 +142,14 @@ FriendSchema = Dry::Validation.Params do
     end
   end
   required(:demographics_hash).value(:hash) do
-    optional(:dob).maybe(:date)
+    optional(:dob).maybe(dob_type)
     optional(:sex).maybe(:string)
     optional(:occupation).maybe(:string)
     required(:available_to_party).filled(:boolean)
   end
   required(:address_hash).value(:hash) do
+    optional(:delivery_line_1).maybe(:string)
+    optional(:last_line).maybe(:string)
     required(:street_number).filled(:string)
     optional(:street_predirection).maybe(:string)
     required(:street_name).filled(:string)
@@ -172,6 +201,8 @@ class FriendService
       sex: demographics_data['sex'],
       occupation: demographics_data['occupation'],
       available_to_party: demographics_data['available_to_party'],
+      delivery_line_1: address_data['delivery_line_1']
+      last_line: address_data['last_line']
       street_number: address_data['street_number'],
       street_predirection: address_data['street_predirection'],
       street_name: address_data['street_name'],
@@ -239,6 +270,8 @@ def validate_address_with_smartystreets
   end
 
   # Update the address and geolocation attributes based on the returned candidate's components
+  address_hash["last_line"] =  first_candidate.components.last_line
+  address_hash["delivery_line_1"] = first_candidate.components.delivery_line_1
   address_hash["street_number"] = first_candidate.components.primary_number
   address_hash["street_predirection"] = first_candidate.components.primary_number
   address_hash["street_name"] = first_candidate.components.street_name
