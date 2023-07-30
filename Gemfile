@@ -27,7 +27,7 @@ gem 'puma', '~> 6.3'
 # gem "kredis"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
-# gem "bcrypt", "~> 3.1.7"
+gem "bcrypt", "~> 3.1", "~> 3.1.13"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
@@ -46,6 +46,14 @@ gem 'rack-cors', '~> 1.1', '>= 1.1.1'
 # this gem. Gem uses its data file for validations and
 # number formatting.
 gem 'phonelib', '~> 0.8.1'
+
+# The activerecord-postgis-adapter provides access to
+# features of the PostGIS geospatial database from
+# ActiveRecord. It extends the standard postgresql adapter
+# to provide support for the spatial data types and features
+# added by the PostGIS extension. It uses the RGeo library
+# to represent spatial data in Ruby.
+gem 'activerecord-postgis-adapter'
 
 #  Here are a few examples showing how to use the Ruby SDK:
 #
@@ -94,16 +102,56 @@ gem 'country_select', '~> 8.0'
 # useful for value coercions, applying constraints, defining
 # complex structs or value objects and more. It was created
 # as a successor to Virtus.
-gem 'dry-types', '~> 1.7'
+gem 'dry-types', '~> 1.7', '~> 1.7.1'
 
 # dry-struct is a gem built on top of dry-types which provides
 # virtus-like DSL for defining typed struct classes.
-gem 'dry-struct', '~> 1.6'
+gem 'dry-struct', '~> 1.6', '~> 1.6.0'
+
+# dry-validation is a data validation library that provides a
+# powerful DSL for defining schemas and validation rules.
+#
+# Validations are expressed through contract objects. A contract
+# specifies a schema with basic type checks and any additional
+# rules that should be applied. Contract rules are applied only
+# once the values they rely on have been succesfully verified by
+# the schema.
+gem 'dry-validation', '~> 1.10', '~> 1.10.0'
+
+# dry-monads is a set of common monads for Ruby. Monads provide
+# an elegant way of handling errors, exceptions and chaining
+# functions so that the code is much more understandable and has
+# all the error handling, without all the ifs and elses.
+gem 'dry-monads', '~> 1.6', '~> 1.6.0'
+
+# dry-configurable is a simple mixin to add thread-safe configur-
+# ation behavior to your classes. There are many libraries that
+# make use of the configuration, and each seemed to have its own
+# implementation with a similar or duplicate interface, so we
+# thought it was strange that this behavior had not already been
+# encapsulated into a reusable gem, hence dry-configurable was born.
+gem 'dry-configurable', '~> 1.1', '~> 1.1.0'
+
+# Object dependency management system based on dry-container and
+# dry-auto_inject allowing you to configure reusable components
+# in any environment, set up their load-paths, require needed files
+# and instantiate objects automatically with the ability to have#
+# them injected as dependencies.
+
+gem 'dry-system', '~> 1.0', '~> 1.0.1'
 
 # Ruby gem for colorizing text using ANSI escape sequences.
 # Extends String class or add a ColorizedString with methods
 # to set the text color, background color and text effects.
 gem 'colorize'
+
+# BigDecimal provides similar support for very large or very
+# accurate floating point numbers. Decimal arithmetic is also
+# useful for general calculation, because it provides the correct
+# answers people expect–whereas normal binary floating point
+# arithmetic often introduces subtle errors because of the con-
+# version between base 10 and base 2.
+gem 'bigdecimal', '~> 3.1', '>= 3.1.4'
 
 group :development, :test do
   # This library provides debugging functionality to Ruby (MRI) 2.6
