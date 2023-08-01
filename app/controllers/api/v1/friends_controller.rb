@@ -2,7 +2,7 @@ class Api::V1::FriendsController < ApplicationController
   before_action :current_friend, only: [:update, :show, :destroy]
 
   def index
-    @friends = FriendRecord.all
+    @friends = Friend.all
 
     if @friends.any?
       render json: { status: "SUCCESS", message: "Fetched all the friends you got", data: @friends }, status: :ok
@@ -34,15 +34,15 @@ class Api::V1::FriendsController < ApplicationController
     end
   end
 
-  # Delete a specific friend DELETE request 
+  # Delete a specific friend DELETE request
   def destroy
     if @friend.destroy
-      render json: { message: "Friend was deleted successfully" }, status: :ok
+      head :ok # Return empty response with HTTP status 200 (OK)
     else
       render json: { message: "Friend does not exist" }, status: :not_found
     end
   end
-  
+
   private
 
   def friend_params
@@ -56,10 +56,11 @@ class Api::V1::FriendsController < ApplicationController
       geolocation_hash: %i[latitude longitude lat_long_location_precision]
     )
   end
-  
-  # case when no friends are found in the index action.
+
+  # Find friend by ID and handle ActiveRecord::RecordNotFound
   def current_friend
-    @friend = FriendRecord.find_by(id: params[:id])
-    render json: { message: "Friend could not be found" }, status: :not_found unless @friend
+    @friend = Friend.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { message: "Friend could not be found" }, status: :not_found
   end
 end

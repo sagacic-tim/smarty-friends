@@ -1,12 +1,12 @@
-class CreateFriends < ActiveRecord::Migration[7.0]
+class CreateFriends < ActiveRecord::Migration[7.3]
   def change
     create_table :friends do |t|
 
-      t.string :name_title, limit: 8
+      t.string :name_title, limit: 32
       t.string :name_first, limit: 32
       t.string :name_middle, limit: 32
       t.string :name_last, limit: 32
-      t.string :name_suffix, limit: 8
+      t.string :name_suffix, limit: 32
 
       t.string :email_1, limit: 64
       t.string :email_1, limit: 64

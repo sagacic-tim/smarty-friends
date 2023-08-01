@@ -1,109 +1,285 @@
 require "smartystreets_ruby_sdk/client_builder"
 require "smartystreets_ruby_sdk/static_credentials"
-require "smartystreets_ruby_sdk/shared_credentials"
 require "smartystreets_ruby_sdk/us_street/lookup"
 require "smartystreets_ruby_sdk/us_street/match_type"
-# require_relative '../lib/tasks/decimal_types'
+require 'bigdecimal'
+require 'dry-types'
+require 'dry-struct'
+require 'dry-validation'
+require 'email_validator'
+require 'phonelib'
+
+module Types
+  include Dry.Types()
+end
+
+DateConstrainedType = Dry::Types::Definition.new(Date).constructor do |value|
+  # Try to parse the date in various formats
+  date_formats = ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d', '%m-%d-%Y', '%d-%m-%Y', '%Y-%m-%d', '%Y%m%d', '%B %d, %Y', '%Y %B %d']
+  parsed_date = nil
+
+  date_formats.each do |format|
+    begin
+      parsed_date = Date.strptime(value, format)
+      break # Stop trying once a valid format is found
+    rescue ArgumentError
+      next # Continue with the next format if parsing fails
+    end
+  end
+
+  if parsed_date.nil?
+    raise Dry::Types::CoercionError.new("Invalid date format: #{value}")
+  end
+
+  # Convert the parsed date to %m/%d/%Y format before saving
+  parsed_date.strftime('%m/%d/%Y')
+end
+
+module ValidationPredicates
+  include Dry::Logic::Predicates
+
+  def valid_email?(value)
+    email_validator = EmailValidator.new(value)
+    email_validator.valid? && email_validator.valid_local?
+  end
+
+  def valid_phone_number?(value)
+    parsed_number = Phonelib.parse(value)
+    parsed_number.valid?
+  end
+
+  def valid_twitter_handle?(value)
+    EmailValidator.valid?(value, EmailValidator::REGEX::TWITTER_HANDLE)
+  end
+end
 
 class Friend < ApplicationRecord
-#  store_accessor :address,
-#    :street_number,
-#    :street_name,
-#    :street_suffix,
-#    :city,
-#    :state_province,
-#    :country,
-#    :country_code,
-#    :postal_code
-  store_accessor :map_coordinates,
-    :latitude,
-    :longitude
+  # app/models/friend.rb – This is a dummy class that is
+  # populated with data from Dry::Struct class FriendService
+end
 
-  # validates_presence_of :street_number, :street_name, :city, :state_province, :country, :postal_code
-  validates :phone, phone: true, allow_blank: true
-  validates :twitter_handle, presence: true, format: { with: /\A(\@)?([a-z0-9_]{1,15})$\z/, message: "please enter a valid twitter name"}
-  validates :email, email: {mode: :strict, require_fqdn: true}
-  validate :validate_address_with_smartystreets
-  validates_presence_of :available_to_party
+class FriendAttributes < Dry::Struct
+  attribute :name_hash, Types::Hash.schema(
+    name_title: Types::Coercible::String.optional.constrained(max_size: 8),
+    name_first: Types::Coercible::String.constrained(max_size: 32),
+    name_middle: Types::Coercible::String.optional.constrained(max_size: 32),
+    name_last: Types::Coercible::String.constrained(max_size: 32),
+    name_suffix: Types::Coercible::String.optional.constrained(max_size: 8)
+  ).default(Hash.new).strict
 
-  serialize :original_attributes
-  serialize :verification_info
+  attribute :contact_info_hash, Types::Hash.schema(
+    email_1: Types::String.constrained(format: URI::MailTo::EMAIL_REGEXP),
+    email_2: Types::Nil | Types::String.constrained(format: URI::MailTo::EMAIL_REGEXP),
+    phone_1: Types::String.constrained(phone_format: :phone_number),
+    phone_2: Types::Nil | Types::String.constrained(phone_format: :phone_number),
+    twitter_handle: Types::String
+  ).default(Hash.new).strict
 
-  private
+  # Define a custom type with the constrained date format
+  dob_type = Types::Date.constrained(type: DateConstrainedType)
 
-  def validate_address_with_smartystreets
-    # puts "street_number: " + street_number
-    # puts "street_name: " + street_name
-    # puts "street_suffix: " + street_suffix
-    # puts "city: " + city
-    # puts "state_province: " + state_province
-    # puts "country: " + country
-    # puts "postal_code: " + postal_code
-    puts "Latitude: " + latitude
-    puts "Longitude: " + longitude
+  attribute :demographics_hash, Types::Hash.schema(
+    dob: Types::Coercible::String.constrained(format: DateConstrainedType).optional,
+    sex: Types::String.constrained(max_size: 6).optional,
+    occupation: Types::String.constrained(max_size: 32).optional,
+    available_to_party: Types::Boolean
+  ).default(Hash.new).strict
 
-    # address_string = "#{street_number} #{street_name} #{street_suffix}, #{city}, #{state_province}, #{country}, #{postal_code}"
-    # puts "address string: " + address_string
+  attribute :address_hash, Types::Hash.schema(
+    delivery_line_1: Types::String.constrained(max_size: 50),
+    last_line: Types::String.constrained(max_size: 50),
+    street_number: Types::String.constrained(max_size: 30),
+    street_predirection: Types::String.constrained(max_size: 16).optional,
+    street_name: Types::String.constrained(max_size: 64),
+    street_suffix: Types::String.constrained(max_size: 16),
+    street_postdirection: Types::String.constrained(max_size: 16).optional,
+    city: Types::String.constrained(max_size: 64),
+    county: Types::String.default.constrained(max_size: 64).optional,
+    state_abbreviation: Types::String.constrained(max_size: 2),
+    country: Types::String.default('United States').constrained(max_size: 32).optional,
+    country_code: Types::String.default('US').constrained(max_size: 4),
+    postal_code: Types::String.constrained(max_size: 5),
+    zip_plus_4_extension: Types::String.constrained(max_size: 4).optional
+  ).default(Hash.new).strict
 
-    # latitude_decimal = Dry::Types['strict.decimal'].try(latitude)
-    # longitude_decimal = Dry::Types['strict.decimal'].try(longitude)
-    # latitude_decimal = latitude.to_f
-    # longitude_decimal = longitude.to_f
-    # puts "latitude_decimal: " + latitude_decimal
-    # puts "longitude_decimal: " + longitude_decimal
-    decimal_latitude = latitude
-    decimal_longitude = longitude
-    puts "decimal_latitude: " + decimal_latitude
-    puts "decimal_longitude: " + decimal_longitude
- 
+  LatitudeType = Types::Decimal.constrained(gteq: BigDecimal('-90'), lteq: BigDecimal('90'))
+  LongitudeType = Types::Decimal.constrained(gteq: BigDecimal('-180'), lteq: BigDecimal('180'))
 
-    # Call SmartyStreets API to validate the address
-    app_auth_id = Rails.application.credentials.dig(:smarty_streets, :auth_id)
-    app_auth_token = Rails.application.credentials.dig(:smarty_streets, :auth_token)
-    puts app_auth_id
-    puts app_auth_token
-    credentials = SmartyStreets::StaticCredentials.new(app_auth_id, app_auth_token)
-    client = SmartyStreets::ClientBuilder.new(credentials).build_us_street_api_client
-    lookup = SmartyStreets::USStreet::Lookup.new
-    lookup.latitude = decimal_latitude
-    lookup.longitude = decimal_longitude
+  attribute :geolocation_hash, Types::Hash.schema(
+    latitude: LatitudeType,
+    longitude: LongitudeType,
+    lat_long_location_precision: Types::String.constrained(max_size: 18)
+  )
+end
 
-    begin
-      client.send_lookup(lookup)
-      rescue SmartyStreets::SmartyError => err
-      puts err
-      return
-    end
-
-    result = lookup.result
-
-    if result.empty?
-      puts 'No candidates. This means the address is not valid.'
-      return
-    end
-
-    first_candidate = result[0]
-
-    puts "There is at least one candidate.\n If the match parameter is set to STRICT, the address is valid.\n Otherwise, check the Analysis output fields to see if the address is valid.\n"
-    puts "Delivery Line 1: #{first_candidate.delivery_line_1}"
-    puts "Last Line: #{first_candidate.last_line}"
-    puts "Delivery Point Bar Code: #{first_candidate.delivery_point_barcode}"
-    puts "Street Number: #{first_candidate.components.primary_number}"
-    puts "Street Name: #{first_candidate.components.street_name}"
-    puts "Street Suffix: #{first_candidate.components.street_suffix}"
-    puts "City: #{first_candidate.components.city_name}"
-    puts "County: #{first_candidate.metadata.county_name}"
-    puts "County FIPS: #{first_candidate.metadata.county_fips}"
-    puts "State Abbreviation: #{first_candidate.components.state_abbreviation}"
-    puts "Zip Code: #{first_candidate.components.zipcode}"
-    puts "Zip Plus 4 Extension: #{first_candidate.components.plus4_code}"
-    puts "Zip Type: #{first_candidate.metadata.zip_type}"
-    puts "Delivery Point: #{first_candidate.components.delivery_point}"
-    puts "Delivery Point Check Digit: #{first_candidate.components.delivery_point_check_digit}"
-    puts "Carrier Route: #{first_candidate.metadata.carrier_route}"
-    puts "Record Type: #{first_candidate.metadata.record_type}"
-
-    puts "Latitude: #{first_candidate.metadata.latitude}"
-    puts "Longitude: #{first_candidate.metadata.longitude}"
+FriendSchema = Dry::Validation.Params do
+  configure do
+    predicates(ValidationPredicates)
   end
+  
+  required(:name_hash).value(:hash) do
+    required(:name_first).filled(:string)
+    required(:name_last).filled(:string)
+    optional(:name_title).maybe(:string)
+    optional(:name_middle).maybe(:string)
+    optional(:name_suffix).maybe(:string)
+  end
+
+  required(:contact_info_hash).value(:hash) do
+    required(:email_1).filled(:string) do
+      rule(email_format: [:email, :valid_email?])
+    end
+
+    optional(:email_2).maybe(:string) do
+      rule(email_format: [:email, :valid_email?])
+    end
+
+    optional(:phone_1).maybe(:string) do
+      rule(phone_format: :valid_phone_number?)
+    end
+
+    optional(:phone_2).maybe(:string) do
+      rule(phone_format: :valid_phone_number?)
+    end
+
+    optional(:twitter_handle).maybe(:string) do
+      rule(twitter_handle_format: :valid_twitter_handle?)
+    end
+  end
+  required(:demographics_hash).value(:hash) do
+    optional(:dob).maybe(dob_type)
+    optional(:sex).maybe(:string)
+    optional(:occupation).maybe(:string)
+    required(:available_to_party).filled(:boolean)
+  end
+  required(:address_hash).value(:hash) do
+    optional(:delivery_line_1).maybe(:string)
+    optional(:last_line).maybe(:string)
+    required(:street_number).filled(:string)
+    optional(:street_predirection).maybe(:string)
+    required(:street_name).filled(:string)
+    required(:street_suffix).filled(:string)
+    optional(:street_postdirection).maybe(:string)
+    required(:city).filled(:string)
+    optional(:county).maybe(:string)
+    required(:state_abbreviation).filled(:string)
+    required(:country_code).filled(:string)
+    required(:postal_code).filled(:string)
+    optional(:zip_plus_4_extension).maybe(:string)
+  end
+  optional(:geolocation_hash).value(:hash) do
+      optional(:latitude).maybe(:decimal)
+      optional(:longitude).matbe(:decimakl)
+      optional(:precision).maybe(:string)
+  end
+end
+
+# method to convert the Friend object, from Dry::Struct class,
+# to FriendRecord, the ActiveRecord class, and save it to the database:
+class FriendService
+  def self.create_friend(friend_data)
+    # Fetch the data from the hash attributes into temporary variables
+    name_data = friend_data[:name_hash] || {}
+    contact_info_data = friend_data[:contact_info_hash] || {}
+    demographics_data = friend_data[:demographics_hash] || {}
+    address_data = friend_data[:address_hash] || {}
+    geolocation_data = friend_data[:geolocation_hash] || {}
+
+    # Combine all data into a single hash for creating the FriendRecord instance
+    friend_record_data = {
+      name_title: name_data['name_title'],
+      name_first: name_data['name_first'],
+      name_middle: name_data['name_middle'],
+      name_last: name_data['name_last'],
+      name_suffix: name_data['name_suffix'],
+      email_1: contact_info_data['email_1'],
+      email_2: contact_info_data['email_2'],
+      phone_1: contact_info_data['phone_1'],
+      phone_2: contact_info_data['phone_2'],
+      twitter_handle: contact_info_data['twitter_handle'],
+      dob: demographics_data['dob'],
+      sex: demographics_data['sex'],
+      occupation: demographics_data['occupation'],
+      available_to_party: demographics_data['available_to_party'],
+      delivery_line_1: address_data['delivery_line_1'],
+      last_line: address_data['last_line'],
+      street_number: address_data['street_number'],
+      street_predirection: address_data['street_predirection'],
+      street_name: address_data['street_name'],
+      street_suffix: address_data['street_suffix'],
+      street_postdirection: address_data['street_postdirection'],
+      city: address_data['city'],
+      county: address_data['county'],
+      state_abbreviation: address_data['state_abbreviation'],
+      country_code: address_data['country_code'],
+      postal_code: address_data['postal_code'],
+      zip_plus_4_extension: address_data['zip_plus_4_extension'],
+      latitude: geolocation_data['latitude'],
+      longitude: geolocation_data['longitude'],
+      lat_long_location_precision: geolocation_data['lat_long_location_precision']
+    }
+
+    # Create the FriendRecord instance
+    friend = FriendRecord.create!(friend_data)
+  end
+end
+
+# Before updating the ActiveRecord record, call the SmartyStreets API to validate the address.
+before_update :validate_address_with_smartystreets
+
+def validate_address_with_smartystreets
+  address_string = "#{address['street_number']} #{address['street_predirection']} #{address['street_name']} #{address['street_suffix']}, #{address['city']} #{address['state_abbreviation']} #{address['postal_code']}"
+
+  # Call SmartyStreets API to validate the address
+  app_auth_id = Rails.application.credentials.dig(:smarty_streets, :auth_id)
+  app_auth_token = Rails.application.credentials.dig(:smarty_streets, :auth_token)
+  credentials = SmartyStreets::StaticCredentials.new(app_auth_id, app_auth_token)
+  client = SmartyStreets::ClientBuilder.new(credentials).build_us_street_api_client
+  lookup = SmartyStreets::USStreet::Lookup.new(address_string) # Pass the address string as an argument
+  lookup.match = :strict # Indicates an exact address match.
+
+  begin
+    client.send_lookup(lookup)
+  rescue SmartyStreets::SmartyError => err
+    puts err
+    return
+  end
+
+  result = lookup.result
+
+  if result.empty?
+    puts 'No candidates. This means the address is not valid.'
+    return
+  end
+
+  first_candidate = result[0]
+
+  case lookup.match
+  when :strict
+    puts "At least one candidate returned.\n\nMatch parameter is set to #{lookup.match}, The API will return detailed output only if a valid match is found. Otherwise, the API response will be an empty array."
+  when :enhanced
+    puts "At least one candidate returned.\n\nMatch parameter is set to #{lookup.match}, The API will return detailed output based on a more aggressive matching mechanism. It also includes a more comprehensive address dataset beyond just the postal address data. Requires a US Core license or a US Rooftop Geocoding license. Note: A freeform address, that we can't find a match for, will respond with an empty array, \"\[\]\"."
+  when :invalid
+    puts "Many candidates are possible matches.\n\nMatch parameter is set to #{lookup.match}, The API will return detailed output for both valid and invalid addresses. To find out if the address is valid, check the dpv_match_code. Values of Y, S, or D indicate a valid address."
+  else
+    puts "Invalid match type"
+  end
+
+  # Update the address and geolocation attributes based on the returned candidate's components
+  self.address_hash['last_line'] = first_candidate.components.last_line
+  self.address_hash['delivery_line_1'] = first_candidate.components.delivery_line_1
+  self.address_hash['street_number'] = first_candidate.components.primary_number
+  self.address_hash['street_predirection'] = first_candidate.components.primary_number
+  self.address_hash['street_name'] = first_candidate.components.street_name
+  self.address_hash['street_suffix'] = first_candidate.components.street_suffix
+  self.address_hash['street_postdirection'] = first_candidate.components.street_postdirection
+  self.address_hash['city'] = first_candidate.components.city_name
+  self.address_hash['county'] = first_candidate.metadata.county_name
+  self.address_hash['state_abbreviation'] = first_candidate.components.state_abbreviation
+  self.address_hash['postal_code'] = first_candidate.components.zipcode
+  self.address_hash['zip_plus_4_extension'] = first_candidate.components.plus4_code
+
+  self.geolocation_hash['latitude'] = first_candidate.components.latitude
+  self.geolocation_hash['longitude'] = first_candidate.components.longitude
+  self.geolocation_hash['lat_long_location_precision'] = first_candidate.components.precision
 end
