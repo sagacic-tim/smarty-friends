@@ -42,10 +42,13 @@ gem "bootsnap", require: false
 # Sharing (CORS) for Rack compatible web applications.
 gem 'rack-cors', '~> 1.1', '>= 1.1.1'
  
-# Google libphonenumber library was taken as a basis for
-# this gem. Gem uses its data file for validations and
-# number formatting.
-gem 'phonelib', '~> 0.8.1'
+# Phonelib is a gem allowing you to validate phone numbers.
+# All validations are based on Google libphonenumber. Cur-
+# rently it can make basic validations and formatting to
+# e164 international number format and national number for-
+# mat with prefix. But it still doesn’t include all Google’s
+# library functionality.
+gem 'phonelib', '~> 0.8', '~> 0.8.2'
 
 # The activerecord-postgis-adapter provides access to
 # features of the PostGIS geospatial database from

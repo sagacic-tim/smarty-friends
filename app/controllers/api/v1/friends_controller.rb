@@ -47,16 +47,25 @@ class Api::V1::FriendsController < ApplicationController
 
   def friend_params
     params.require(:friend).permit(
-      # arrays of symbols, which represents the permitted attri-
-      # butes for each hash key.
-      name_hash: %i[name_title name_first name_middle name_last name_suffix],
-      contact_info_hash: %i[email_1 email_2 phone_1 phone_2 twitter_handle],
-      demographics_hash: %i[dob sex occupation available_to_party],
-      address_hash: %i[delivery_line_1 last_line street_number street_predirection street_name street_suffix street_postdirection city county state_abbreviation country country_code postal_code zip_plus_4_extension],
-      geolocation_hash: %i[latitude longitude lat_long_location_precision]
+      # Person's name attributes
+      :name_title, :name_first, :name_middle, :name_last, :name_suffix,
+  
+      # Contact information attributes
+      :email_1, :email_2, :phone_1, :phone_2, :twitter_handle,
+  
+      # Demographics attributes
+      :dob, :sex, :occupation, :available_to_party,
+  
+      # Address attributes
+      :delivery_line_1, :last_line, :street_number, :street_predirection,
+      :street_name, :street_suffix, :street_postdirection, :city, :county,
+      :state_abbreviation, :country, :country_code, :postal_code, :zip_plus_4_extension,
+  
+      # Geolocation attributes
+      :latitude, :longitude, :lat_long_location_precision
     )
   end
-
+  
   # Find friend by ID and handle ActiveRecord::RecordNotFound
   def current_friend
     @friend = Friend.find(params[:id])
