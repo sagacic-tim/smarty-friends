@@ -9,10 +9,14 @@ require 'dry-validation'
 require 'email_validator'
 require 'phonelib'
 require 'date'
+
 module Types
   include Dry.Types()
 
-  Email = String.constrained(format: EmailValidator::REGEX)
+  Email = Types::String.constrained(format: EmailValidator::REGEX) do |value|
+    raise Dry::Types::ConstraintError, "#{value.inspect} is not a valid email address." unless EMAIL_REGEX.match?(value)
+    value
+  end
 
   PhoneNumber = Types::String.constructor do |value|
     # Use phonelib's parse method to validate and parse the phone number
@@ -37,7 +41,7 @@ module Types
     end
   end
   
-  class DateConstrainedType < Dry::Types::Definition
+  class AllDatesToUSDate < Dry::Types::Definition
     DATE_FORMATS = [
       '%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d',
       '%m-%d-%Y', '%d-%m-%Y', '%Y-%m-%d', '%Y%m%d',
@@ -65,62 +69,86 @@ module Types
     end
   end
 
-  Latitude = Types::Decimal.constrained(gteq: BigDecimal('-90'), lteq: BigDecimal('90'))
+  class Latitude < Dry::Types::Definition
+    LATITUDE_MIN = BigDecimal('-90')
+    LATITUDE_MAX = BigDecimal('90')
+
+    def initialize(type = Types::Decimal)
+      super(type.constrained(gteq: LATITUDE_MIN, lteq: LATITUDE_MAX, message: "Latitude must be between #{LATITUDE_MIN} and #{LATITUDE_MAX}"))
+    end
+  end
+
+  class Longitude < Dry::Types::Definition
+    LONGITUDE_MIN = BigDecimal('-180')
+    LONGITUDE_MAX = BigDecimal('180')
+
+    def initialize(type = Types::Decimal)
+      super(type.constrained(gteq: LONGITUDE_MIN, lteq: LONGITUDE_MAX, message: "LONGitude must be between #{LONGITUDE_MIN} and #{LONGITUDE_MAX}"))
+    end
+  end
   Longitude = Types::Decimal.constrained(gteq: BigDecimal('-180'), lteq: BigDecimal('180'))
 
-  NameTitle = Strict::String.enum('Adm.', 'Amb.', 'Baron', 'Brnss.', 'Bishop', 'Brig. Gen.', 'Br.', 'Cpt.', 'Capt.', 'Chan.', 'Chapln.', 'CPO', 'Cmdr.', 'Col.', 'Col. (Ret.)', 'Cpl.', 'Count', 'Countess', 'Dean', 'Dr.', 'Duke', 'Ens.', 'Fr.', 'Frau', 'Gen.', 'Gov.', 'Judge', 'Justice', 'Lord', 'Lt.', '2Lt.', '2dLt.', 'Lt. Cmdr.', 'Lt. Col.', 'Lt. Gen.', 'Lt. j.g.', 'Mlle.', 'Maj.', 'Master', 'Master Sgt.', 'Miss', 'Mme.', 'MIDN', 'M.', 'Msgr.', 'Mr.', 'Mrs.', 'Ms.', 'Mx.', 'Pres.', 'Princess', 'Prof.', 'Rabbi', 'R.Adm.', 'Rep.', 'Rev.', 'Rt.Rev.', 'Sgt.', 'Sen.', 'Sr.', 'Sra.', 'Srta.', 'Sheikh', 'Sir', 'Sr.', 'S. Sgt.', 'The Hon.', 'The Venerable', 'V.Adm.')
-  NameSuffix = Strict::String.enum('B.A.', 'B.F.A.', 'B.M.', 'B.S.', 'B.S.E.E.', 'D.A.', 'D.B.A.', 'D.D.S.', 'D.M.L.', 'D.Min.','D.P.T.', 'Ed.D.', 'Ed.M.', 'J.D.', 'M.A.', 'M.B.A.', 'M.Div.', 'M.F.A.', 'M.D.', 'M.M.', 'M.P.A.', 'M.Phil.', 'M.S.', 'M.S.A.', 'M.S.E.E.', 'M.S.L.I.S.', 'M.S.P.T.', 'M.Th.', 'Ph.D.', 'R.N.', 'S.T.M.', 'Th.D.')
+  NameTitle = Strict::String.enum('Adm.', 'Amb.', 'Baron', 'Brnss.', 'Bishop', 'Brig. Gen.', 'Br.', 'Cpt.', 'Capt.', 'Chan.', 'Chapln.', 'CPO', 'Cmdr.', 'Col.', 'Col. (Ret.)', 'Cpl.', 'Count', 'Countess', 'Dean', 'Dr.', 'Duke', 'Ens.', 'Fr.', 'Frau', 'Gen.', 'Gov.', 'Judge', 'Justice', 'Lord', 'Lt.', '2Lt.', '2dLt.', 'Lt. Cmdr.', 'Lt. Col.', 'Lt. Gen.', 'Lt. j.g.', 'Mlle.', 'Maj.', 'Master', 'Master Sgt.', 'Miss', 'Mme.', 'MIDN', 'M.', 'Msgr.', 'Mr.', 'Mrs.', 'Ms.', 'Mx.', 'Pres.', 'Princess', 'Prof.', 'Rabbi', 'R.Adm.', 'Rep.', 'Rev.', 'Rt.Rev.', 'Sgt.', 'Sen.', 'Sr.', 'Sra.', 'Srta.', 'Sheikh', 'Sir', 'Sr.', 'S. Sgt.', 'The Hon.', 'The Venerable', 'V.Adm.').freeze
+  NameSuffix = Strict::String.enum('B.A.', 'B.F.A.', 'B.F.D', 'B.M.', 'B.S.', 'B.S.E.E.', 'D.A.', 'D.B.A.', 'D.D.S.', 'D.M.L.', 'D.Min.','D.P.T.', 'Ed.D.', 'Ed.M.', 'J.D.', 'M.A.', 'M.B.A.', 'M.Div.', 'M.F.A.', 'M.D.', 'M.M.', 'M.P.A.', 'M.Phil.', 'M.S.', 'M.S.A.', 'M.S.E.E.', 'M.S.L.I.S.', 'M.S.P.T.', 'M.Th.', 'Ph.D.', 'R.N.', 'S.T.M.', 'Th.D.').freeze
 end
 
 class Friend < ApplicationRecord
 end
 
-class Name < Dry::Validation::Contract
+# Create a name contract that allows for storage of all parts of a name.
+class NameContract < Dry::Validation::Contract
   params do
-  optional(:name_title).filled(Types::NameTitle)
-  optional(:name_first).filled(Types::Coercible::String.constrained(max_size: 32))
-  optional(:name_middle).filled(Types::Coercible::String.optional.constrained(max_size: 32))
-  optional(:name_last).filled(Types::Coercible::String.constrained(max_size: 32))
-  optional(:name_suffix).filled(Types::NameSuffix)
+    optional(:name_title).filled(Types::NameTitle)
+    required(:name_first).filled(Types::Coercible::String.constrained(max_size: 32))
+    optional(:name_middle).filled(Types::Coercible::String.optional.constrained(max_size: 32))
+    required(:name_last).filled(Types::Coercible::String.constrained(max_size: 32))
+    optional(:name_suffix).filled(Types::NameSuffix)
   end
 end
 
-  # define the contact information desired to be collected
-  contact_info_fields = Types::Hash.schema(
-    email_1: Types::Email,
-    email_2: Types::Nil | Types::Email,
-    phone_1: Types::PhoneNumber,
-    phone_2: Types::Nil | Types::PhoneNumber,
-    twitter_handle: Types::TwitterHandle
-  ).strict
+# define the contact information desired to be collected
+class ContactContract < Dry::Validation::Contract
+  params do
+    required(:email_1).filled(Types::Email)
+    optional(:email_2).filled(Types::Nil | Types::Email)
+    optional(:phone_1).filled(Types::PhoneNumber)
+    optional(:phone_2).filled(Types::Nil | Types::PhoneNumber)
+    optional(:twitter_handle).filled(Types::Nil | Types::TwitterHandle)
+  end
+end
 
-  DateConstrainedType = DateConstrainedType.new()
-  DemographicsFields = Types::Hash.schema(
-    dob: Types::Coercible::String.constrained(format: DateConstrainedType).optional,
-    sex: Types::String.constrained(max_size: 6).optional,
-    occupation: Types::String.constrained(max_size: 32).optional,
-    available_to_party: Types::Bool
-  ).strict
+# define the contact information desired to be collected
+class DemographicsContract < Dry::Validation::Contract
+  params do
+    optional(:dob).filled(Types::AllDatesToUSDate)
+    optional(:sex).filled(Types::String.constrained(max_size: 6))
+    optional(:occupation).filled(Types::String.constrained(max_size: 32))
+    optional(:available_to_party).filled(Types::Bool)
+  end
+end
 
-  address_fields = Types::Hash.schema(
-    delivery_line_1: Types::String.constrained(max_size: 50),
-    last_line: Types::String.constrained(max_size: 50),
-    street_number: Types::String.constrained(max_size: 30),
-    street_predirection: Types::String.constrained(max_size: 16).optional,
-    street_name: Types::String.constrained(max_size: 64),
-    street_suffix: Types::String.constrained(max_size: 16),
-    street_postdirection: Types::String.constrained(max_size: 16).optional,
-    city: Types::String.constrained(max_size: 64),
-    state_abbreviation: Types::String.constrained(max_size: 2),
-    country: Types::String.default('United States').constrained(max_size: 32).optional,
-    country_code: Types::String.default('US').constrained(max_size: 4),
-    postal_code: Types::String.constrained(max_size: 5),
-    zip_plus_4_extension: Types::String.constrained(max_size: 4).optional
-  ).strict
+class AddressContract < Dry::Validation::Contract
+  params do
+    optional(:delivery_line_1).filled(Types::String.constrained(max_size: 50))
+    optional(:last_line).filled(Types::String.constrained(max_size: 50))
+    required(:street_number).filled(Types::String.constrained(max_size: 30))
+    optional(:street_predirection).filled(Types::String.constrained(max_size: 16))
+    required(:street_name).filled(Types::String.constrained(max_size: 64))
+    required(:street_suffix).filled(Types::String.constrained(max_size: 16))
+    optional(:street_postdirection).filled(Types::String.constrained(max_size: 16))
+    required(:city).filled(Types::String.constrained(max_size: 64))
+    required(:state_abbreviation).filled(Types::String.constrained(max_size: 2))
+    optional(:country).filled(Types::String.default('United States').constrained(max_size: 32))
+    optional(:country_code).filled(Types::String.default('US').constrained(max_size: 4))
+    required(:postal_code).filled(Types::String.constrained(max_size: 5))
+    optional(:zip_plus_4_extension).filled(Types::String.constrained(max_size: 4))
+  end
+end
 
-  geolocation_fields = Types::Hash.schema(
-    latitude: Types::Latitude,
-    longitude: Types::Longitude,
-    lat_long_location_precision: Types::String.constrained(max_size: 18)
-  )
+class GeolocationContract < Dry::Validation::Contract
+  params do
+    optional(:latitude).filled(Types::Nil | Types::Latitude)
+    optional(:longitude).filled(Types::Nil | Types::Longitude)
+    optional(:lat_long_location_precision).filled(Types::Nil | Types::String.constrained(max_size: 18))
+  end
 end
