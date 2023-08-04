@@ -10,42 +10,6 @@ require 'email_validator'
 require 'phonelib'
 require 'date'
 
-def valid_email?(value)
-  email_validator = EmailValidator.new(value)
-  email_validator.valid? && email_validator.valid_local?
-end
-
-def valid_phone_number?(value)
-  parsed_number = Phonelib.parse(value)
-  parsed_number.valid?
-end
-
-def valid_twitter_handle?(value)
-  EmailValidator.valid?(value, EmailValidator::REGEX::TWITTER_HANDLE)
-end
-
-class DateConstrainedType < Dry::Types::Definition
-  DATE_FORMATS = [
-    '%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d',
-    '%m-%d-%Y', '%d-%m-%Y', '%Y-%m-%d', '%Y%m%d',
-    '%B %d, %Y', '%Y %B %d'
-  ].freeze
-
-  def initialize(type = Dry::Types['strict.string'])
-    super(type.constructor(&method(:parse_date)))
-  end
-
-  private
-
-  def parse_date(value)
-    DATE_FORMATS.each do |format|
-      parsed_date = Date.strptime(value, format) rescue nil
-      return parsed_date.strftime('%m/%d/%Y') if parsed_date
-    end
-
-    raise Dry::Types::CoercionError.new("Invalid date format: #{value}")
-  end
-end
 
 class Friend < ApplicationRecord
   # Add association for Friendattribute(s
@@ -138,6 +102,57 @@ class FriendAttributes < Dry::Struct
 
   module Types
     include Dry.Types()
+
+    Email = String.constrained(format: URI::MailTo::EMAIL_REGEXP)
+    PhoneNumber = Types::String.constructor do |value|
+      # Use phonelib's parse method to validate and parse the phone number
+      parsed_number = Phonelib.parse(value)
+      
+      # Check if the number is valid and raise an error if it's not
+      raise Dry::Types::ConstraintError, 'Invalid phone number' unless parsed_number.valid?
+      
+      # Return the E.164 formatted phone number
+      parsed_number.full_e164
+    end
+    class TwitterHandle < Dry::Types::Value
+      TWITTER_HANDLE_REGEX = /^(@)?[a-zA-Z0-9_]{1,15}$/
+  
+      def self.valid?(value)
+        TWITTER_HANDLE_REGEX.match?(value)
+      end
+  
+      def self.error_message(value)
+        "#{value.inspect} is not a valid Twitter handle."
+      end
+    end
+    
+    class DateConstrainedType < Dry::Types::Definition
+      DATE_FORMATS = [
+        '%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d',
+        '%m-%d-%Y', '%d-%m-%Y', '%Y-%m-%d', '%Y%m%d',
+        '%B %d, %Y', '%Y %B %d'
+      ].freeze
+  
+      def initialize(type = Dry::Types['strict.string'])
+        super(type.constructor(&method(:parse_date)).constrained(&method(:validate_date)))
+      end
+  
+      private
+  
+      def parse_date(value)
+        DATE_FORMATS.each do |format|
+          parsed_date = Date.strptime(value, format) rescue nil
+          return parsed_date.strftime('%m/%d/%Y') if parsed_date
+        end
+  
+        raise Dry::Types::CoercionError.new("Invalid date format: #{value}")
+      end
+  
+      def validate_date(value)
+        return value if parse_date(value) # Check if the date can be parsed successfully
+        raise Dry::Types::ConstraintError.new("Invalid date: #{value}")
+      end
+    end
   end
 
   # define all the possible parts of a person's name
@@ -151,11 +166,11 @@ class FriendAttributes < Dry::Struct
 
   # define the contact information desired to be collected
   contact_info_fields = Types::Hash.schema(
-    email_1: Types::String.constrained(format: URI::MailTo::EMAIL_REGEXP),
-    email_2: Types::Nil | Types::String.constrained(format: URI::MailTo::EMAIL_REGEXP),
-    phone_1: Types::String.constrained(max_size: 20),
-    phone_2: Types::Nil | Types::String.constrained(max_size: 20),
-    twitter_handle: String
+    email_1: Types::Email,
+    email_2: Types::Nil | Types::Email,
+    phone_1: Types::PhoneNumber,
+    phone_2: Types::Nil | Types::PhoneNumber,
+    twitter_handle: Types::TwitterHandle
   ).strict
 
   DateConstrainedType = DateConstrainedType.new()
