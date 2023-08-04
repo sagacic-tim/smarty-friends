@@ -18,7 +18,7 @@ module Types
     value
   end
 
-  PhoneNumber = Types::String.constructor do |value|
+  PhoneNumberType = Types::String.constructor do |value|
     # Use phonelib's parse method to validate and parse the phone number
     parsed_number = Phonelib.parse(value)
     
@@ -29,7 +29,7 @@ module Types
     parsed_number.full_e164
   end
 
-  class TwitterHandle < Dry::Types::Value
+  class TwitterHandleType < Dry::Types::Value
     TWITTER_HANDLE_REGEX = /^(@)?[a-zA-Z0-9_]{1,15}$/
 
     def self.valid?(value)
@@ -69,7 +69,7 @@ module Types
     end
   end
 
-  class Latitude < Dry::Types::Definition
+  class LatitudeType < Dry::Types::Definition
     LATITUDE_MIN = BigDecimal('-90')
     LATITUDE_MAX = BigDecimal('90')
 
@@ -78,7 +78,7 @@ module Types
     end
   end
 
-  class Longitude < Dry::Types::Definition
+  class LongitudeType < Dry::Types::Definition
     LONGITUDE_MIN = BigDecimal('-180')
     LONGITUDE_MAX = BigDecimal('180')
 
@@ -86,34 +86,35 @@ module Types
       super(type.constrained(gteq: LONGITUDE_MIN, lteq: LONGITUDE_MAX, message: "LONGitude must be between #{LONGITUDE_MIN} and #{LONGITUDE_MAX}"))
     end
   end
-  Longitude = Types::Decimal.constrained(gteq: BigDecimal('-180'), lteq: BigDecimal('180'))
 
-  NameTitle = Strict::String.enum('Adm.', 'Amb.', 'Baron', 'Brnss.', 'Bishop', 'Brig. Gen.', 'Br.', 'Cpt.', 'Capt.', 'Chan.', 'Chapln.', 'CPO', 'Cmdr.', 'Col.', 'Col. (Ret.)', 'Cpl.', 'Count', 'Countess', 'Dean', 'Dr.', 'Duke', 'Ens.', 'Fr.', 'Frau', 'Gen.', 'Gov.', 'Judge', 'Justice', 'Lord', 'Lt.', '2Lt.', '2dLt.', 'Lt. Cmdr.', 'Lt. Col.', 'Lt. Gen.', 'Lt. j.g.', 'Mlle.', 'Maj.', 'Master', 'Master Sgt.', 'Miss', 'Mme.', 'MIDN', 'M.', 'Msgr.', 'Mr.', 'Mrs.', 'Ms.', 'Mx.', 'Pres.', 'Princess', 'Prof.', 'Rabbi', 'R.Adm.', 'Rep.', 'Rev.', 'Rt.Rev.', 'Sgt.', 'Sen.', 'Sr.', 'Sra.', 'Srta.', 'Sheikh', 'Sir', 'Sr.', 'S. Sgt.', 'The Hon.', 'The Venerable', 'V.Adm.').freeze
-  NameSuffix = Strict::String.enum('B.A.', 'B.F.A.', 'B.F.D', 'B.M.', 'B.S.', 'B.S.E.E.', 'D.A.', 'D.B.A.', 'D.D.S.', 'D.M.L.', 'D.Min.','D.P.T.', 'Ed.D.', 'Ed.M.', 'J.D.', 'M.A.', 'M.B.A.', 'M.Div.', 'M.F.A.', 'M.D.', 'M.M.', 'M.P.A.', 'M.Phil.', 'M.S.', 'M.S.A.', 'M.S.E.E.', 'M.S.L.I.S.', 'M.S.P.T.', 'M.Th.', 'Ph.D.', 'R.N.', 'S.T.M.', 'Th.D.').freeze
+  NameTitleType = Strict::String.enum('Adm.', 'Amb.', 'Baron', 'Brnss.', 'Bishop', 'Brig. Gen.', 'Br.', 'Cpt.', 'Capt.', 'Chan.', 'Chapln.', 'CPO', 'Cmdr.', 'Col.', 'Col. (Ret.)', 'Cpl.', 'Count', 'Countess', 'Dean', 'Dr.', 'Duke', 'Ens.', 'Fr.', 'Frau', 'Gen.', 'Gov.', 'Judge', 'Justice', 'Lord', 'Lt.', '2Lt.', '2dLt.', 'Lt. Cmdr.', 'Lt. Col.', 'Lt. Gen.', 'Lt. j.g.', 'Mlle.', 'Maj.', 'Master', 'Master Sgt.', 'Miss', 'Mme.', 'MIDN', 'M.', 'Msgr.', 'Mr.', 'Mrs.', 'Ms.', 'Mx.', 'Pres.', 'Princess', 'Prof.', 'Rabbi', 'R.Adm.', 'Rep.', 'Rev.', 'Rt.Rev.', 'Sgt.', 'Sen.', 'Sr.', 'Sra.', 'Srta.', 'Sheikh', 'Sir', 'Sr.', 'S. Sgt.', 'The Hon.', 'The Venerable', 'V.Adm.').freeze
+  NameSuffixType = Strict::String.enum('B.A.', 'B.F.A.', 'B.F.D', 'B.M.', 'B.S.', 'B.S.E.E.', 'D.A.', 'D.B.A.', 'D.D.S.', 'D.M.L.', 'D.Min.','D.P.T.', 'Ed.D.', 'Ed.M.', 'J.D.', 'M.A.', 'M.B.A.', 'M.Div.', 'M.F.A.', 'M.D.', 'M.M.', 'M.P.A.', 'M.Phil.', 'M.S.', 'M.S.A.', 'M.S.E.E.', 'M.S.L.I.S.', 'M.S.P.T.', 'M.Th.', 'Ph.D.', 'R.N.', 'S.T.M.', 'Th.D.').freeze
 end
 
 class Friend < ApplicationRecord
+  # model information gets added via
+  # Dry::Validation::Contracts
 end
 
 # Create a name contract that allows for storage of all parts of a name.
 class NameContract < Dry::Validation::Contract
   params do
-    optional(:name_title).filled(Types::NameTitle)
+    optional(:name_title).filled(Types::NameTitleType)
     required(:name_first).filled(Types::Coercible::String.constrained(max_size: 32))
     optional(:name_middle).filled(Types::Coercible::String.optional.constrained(max_size: 32))
     required(:name_last).filled(Types::Coercible::String.constrained(max_size: 32))
-    optional(:name_suffix).filled(Types::NameSuffix)
+    optional(:name_suffix).filled(Types::NameSuffixTyop)
   end
 end
 
 # define the contact information desired to be collected
-class ContactContract < Dry::Validation::Contract
+class ContactsContract < Dry::Validation::Contract
   params do
-    required(:email_1).filled(Types::Email)
-    optional(:email_2).filled(Types::Nil | Types::Email)
-    optional(:phone_1).filled(Types::PhoneNumber)
-    optional(:phone_2).filled(Types::Nil | Types::PhoneNumber)
-    optional(:twitter_handle).filled(Types::Nil | Types::TwitterHandle)
+    required(:email_1).filled(Types::EmailType)
+    optional(:email_2).filled(Types::Nil | Types::EmailType)
+    optional(:phone_1).filled(Types::PhoneNumberType)
+    optional(:phone_2).filled(Types::Nil | Types::PhoneNumberType)
+    optional(:twitter_handle).filled(Types::Nil | Types::TwitterHandleType)
   end
 end
 
