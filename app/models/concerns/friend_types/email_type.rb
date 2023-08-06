@@ -1,4 +1,5 @@
 require 'dry-types'
+require 'dry-validation'
 require 'email_validator'
 
 module Types

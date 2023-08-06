@@ -156,6 +156,12 @@ gem 'colorize'
 # version between base 10 and base 2.
 gem 'bigdecimal', '~> 3.1', '>= 3.1.4'
 
+# Rollbar gives you a real-time feed of all errors — including
+# unhandled exceptions — so you’ll never miss a bug. Easily
+# monitor all related microservices in one view and use intelligent
+# filters to see issues by project, environment or framework.
+gem 'rollbar'
+
 group :development, :test do
   # This library provides debugging functionality to Ruby (MRI) 2.6
   # and later.

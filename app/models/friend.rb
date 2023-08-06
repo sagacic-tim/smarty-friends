@@ -5,32 +5,36 @@ require "smartystreets_ruby_sdk/static_credentials"
 require "smartystreets_ruby_sdk/us_street/lookup"
 require 'bigdecimal'
 require 'dry-types'
-require_relative 'concerns/name_contract'
-require_relative 'concerns/contacts_contract'
-require_relative 'concerns/demographics_contract'
-require_relative 'concerns/geolocation_contract'
-require_relative 'concerns/address_contract'
+require 'dry-validation'
+require_relative 'concerns/friend_types/all_dates_to_us_date.rb'
+require_relative 'concerns/friend_types/email_type.rb'
+require_relative 'concerns/friend_types/latitude_type.rb'
+require_relative 'concerns/friend_types/longitude_type.rb'
+require_relative 'concerns/friend_types/name_title_type.rb'
+require_relative 'concerns/friend_types/name_suffix_type.rb'
+require_relative 'concerns/friend_types/phone_number_type.rb'
+require_relative 'concerns/friend_types/twitter_handle_type.rb'
 
 class Friend < ApplicationRecord
   include Types # This will include the Dry::Types module
 
   # Define attributes based on the contracts
-  attribute :name_title, NameTitleType
+  attribute :name_title, Types::NameTitleType
   attribute :name_first, Types::Coercible::String.constrained(max_size: 32)
   attribute :name_middle, Types::Coercible::String.optional.constrained(max_size: 32)
   attribute :name_last, Types::Coercible::String.constrained(max_size: 32)
-  attribute :name_suffix, NameSuffixType
-  attribute :email_1, EmailType
-  attribute :email_2, Types::Nil | EmailType
-  attribute :phone_1, PhoneNumberType
-  attribute :phone_2, Types::Nil | PhoneNumberType
-  attribute :twitter_handle, Types::Nil | TwitterHandleType
-  attribute :dob, AllDatesToUSDate
+  attribute :name_suffix, Types::NameSuffixType
+  attribute :email_1, Types::EmailType
+  attribute :email_2, Types::Nil | Types::EmailType
+  attribute :phone_1, Types::PhoneNumberType
+  attribute :phone_2, Types::Nil | Types::PhoneNumberType
+  attribute :twitter_handle, Types::Nil | Types::TwitterHandleType
+  attribute :dob, Types::AllDatesToUSDate
   attribute :sex, Types::String.constrained(max_size: 6)
   attribute :occupation, Types::String.constrained(max_size: 32)
   attribute :available_to_party, Types::Bool
-  attribute :latitude, Types::Nil | LatitudeType
-  attribute :longitude, Types::Nil | LongitudeType
+  attribute :latitude, Types::Nil | Types::LatitudeType
+  attribute :longitude, Types::Nil | Types::LongitudeType
   attribute :lat_long_location_precision, Types::Nil | Types::String.constrained(max_size: 18)
   attribute :delivery_line_1, Types::String.constrained(max_size: 50)
   attribute :last_line, Types::String.constrained(max_size: 50)

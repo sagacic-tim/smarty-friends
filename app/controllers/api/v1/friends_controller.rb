@@ -4,6 +4,8 @@ require_relative 'concerns/contacts_contract'
 require_relative 'concerns/demographics_contract'
 require_relative 'concerns/geolocation_contract'
 require_relative 'concerns/address_contract'
+require 'dry-types'
+require 'dry-validation'
 
 class Api::V1::FriendsController < ApplicationController
   before_action :current_friend, only: [:show, :update, :destroy]

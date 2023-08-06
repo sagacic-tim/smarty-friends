@@ -1,5 +1,5 @@
-require_relative 'types/name_title_type'
-require_relative 'types/name_suffix_type'
+require_relative 'friend_types/name_title_type'
+require_relative 'friend_types/name_suffix_type'
 require 'dry-types'
 require 'dry-validation'
 

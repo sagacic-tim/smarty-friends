@@ -6,6 +6,13 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# config.autoload_paths += Dir[Rails.root.join('app', 'models', 'concerns', 'friend_concerns')]
+# config.eager_load_paths += Dir[Rails.root.join('app', 'models', 'concerns', 'friend_concerns')]
+# config.autoload_paths += Dir[Rails.root.join('app', 'models', 'concerns', 'friend_types')]
+# config.eager_load_paths += Dir[Rails.root.join('app', 'models', 'concerns', 'friend_types')]
+# config.autoload_paths += Dir[Rails.root.join('lib', 'tasks', 'decimal_types')]
+# config.eager_load_paths += Dir[Rails.root.join('lib', 'tasks', 'decimal_types')]
+
 module FriendsApi
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.

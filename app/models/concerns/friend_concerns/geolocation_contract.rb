@@ -1,5 +1,5 @@
-require_relative 'types/latitude_type'
-require_relative 'types/longitude_type'
+require_relative 'friend_types/latitude_type'
+require_relative 'friend_types/longitude_type'
 require 'dry-types'
 require 'dry-validation'
 

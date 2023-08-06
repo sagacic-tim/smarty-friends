@@ -1,4 +1,4 @@
-require_relative 'types/all_dates_to_us_date'
+require_relative 'friend_types/all_dates_to_us_date'
 require 'dry-types'
 require 'dry-validation'
 
