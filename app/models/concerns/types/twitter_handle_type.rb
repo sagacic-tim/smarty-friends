@@ -3,15 +3,13 @@ require 'dry-types'
 module Types
   include Dry.Types()
 
-  class TwitterHandleType < Dry::Types::Value
+  TwitterHandleType = Types::String.constructor do |value|
     TWITTER_HANDLE_REGEX = /^(@)?[a-zA-Z0-9_]{1,15}$/
 
-    def self.valid?(value)
-      TWITTER_HANDLE_REGEX.match?(value)
+    unless TWITTER_HANDLE_REGEX.match?(value)
+      raise Dry::Types::ConstraintError, "#{value.inspect} is not a valid Twitter handle."
     end
 
-    def self.error_message(value)
-      "#{value.inspect} is not a valid Twitter handle."
-    end
+    value
   end
 end

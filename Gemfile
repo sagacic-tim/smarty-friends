@@ -90,7 +90,7 @@ gem 'geocoder', '~> 1.3', '>= 1.3.7'
 # We understand that many use cases require an increased
 # level of validation. This is supported by using the
 # :strict validation mode.
-gem 'email_validator', :require => 'email_validator/strict'
+gem 'email_validator', '~> 2.2', '>= 2.2.4'
 
 # gem 'country_select' provides a simple helper to get an
 # HTML select list of countries using the ISO 3166-1 standard.
