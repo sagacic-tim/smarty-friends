@@ -1,4 +1,5 @@
 require 'dry-types'
+require 'dry-logic'
 require 'date'
 
 module Types

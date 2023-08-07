@@ -1,4 +1,6 @@
 require 'dry-types'
+require 'dry-types'
+require 'dry-logic'
 require 'phonelib'
 
 module Types

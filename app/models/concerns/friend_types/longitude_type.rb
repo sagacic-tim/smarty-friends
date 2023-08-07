@@ -1,15 +1,13 @@
-require 'bigdecimal'
 require 'dry-types'
+require 'dry-logic'
+require 'bigdecimal'
 
 module Types
   include Dry.Types()
 
-  class LongitudeType < Dry::Types::Definition
-    LONGITUDE_MIN = BigDecimal('-180')
-    LONGITUDE_MAX = BigDecimal('180')
-
-    def self.constrained_type
-      Types::Decimal.constrained(gteq: LONGITUDE_MIN, lteq: LONGITUDE_MAX, message: "Longitude must be between #{LONGITUDE_MIN} and #{LONGITUDE_MAX}")
-    end
+  LongitudeType = Types::Coercible::Decimal.constrained(gteq: BigDecimal('-180'), lteq: BigDecimal('180')).constructor do |value|
+    parsed_value = Types::Coercible::Decimal[value]
+    raise Dry::Types::ConstraintError.new("Invalid longitude: #{value}") unless (-180..180).cover?(parsed_value)
+    parsed_value
   end
 end

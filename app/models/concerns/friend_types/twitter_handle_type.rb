@@ -1,4 +1,5 @@
 require 'dry-types'
+require 'dry-logic'
 
 module Types
   include Dry.Types()

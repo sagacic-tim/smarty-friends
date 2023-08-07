@@ -1,4 +1,5 @@
 require 'dry-types'
+require 'dry-logic'
 require 'dry-validation'
 require 'email_validator'
 

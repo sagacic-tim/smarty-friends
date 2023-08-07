@@ -1,7 +1,7 @@
 # This file should contain all the record creations needed to seed the database with its default values.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
-friend1_data = {
+friend_data = {
     name_title: 'Sir',
     name_first: 'Timothy',
     name_middle: 'Edgar',
@@ -20,26 +20,8 @@ friend1_data = {
     street_name: 'Rodney',
     street_suffix: 'Road',
     city: 'West Covina',
-    state_abbreviation: 'CA',
-  }
-
-  friend2_data = {
-    name_title: 'Mr.',
-    name_first: 'William',
-    name_last: 'Bixbie',
-    email_1: 'b.bixbie@gmail.com',
-    phone_1: '+19098764523',
-    twitter_handle: '@bbixbie',
-    dob: Date.parse('1918-10-17'),
-    sex: 'Male',
-    occupation: 'Astrophysicist',
-    available_to_party: false,
-    street_number: '2206',
-    street_name: 'Brentwood',
-    street_suffix: 'Drive',
-    city: 'West Covina',
-    state_abbreviation: 'CA',
-  }
+    state_abbreviation: 'CA'
+}
   
   # Add the friend_data hash to the Friend.create! method
-  Friend.create!(friend1_data, friend2_data)
+  Friend.create!(friend_data)
